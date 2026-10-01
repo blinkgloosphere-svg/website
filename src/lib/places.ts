@@ -30,48 +30,69 @@ const SAMPLE: PlaceDetails[] = [
   { placeId: "sample-glow-skin", name: "Glow Skin Lab", address: "Orchard Central, Singapore", rating: 4.1, reviewCount: 58, reviewLink: reviewLinkFor("sample-glow-skin"), mapsUrl: null },
 ];
 
-export async function searchPlaces(query: string): Promise<PlaceSuggestion[]> {
+/** Reads Google's error message so the tools can say what is wrong (bad key, API not enabled, billing). */
+async function googleError(res: Response, what: string): Promise<Error> {
+  let detail = "";
+  try {
+    const j = (await res.json()) as { error?: { message?: string; status?: string } };
+    detail = j.error?.message ?? j.error?.status ?? "";
+  } catch {
+    /* not JSON */
+  }
+  return new Error(`Google ${what} failed (${res.status})${detail ? `: ${detail}` : ""}`);
+}
+
+type Prediction = {
+  placeId: string;
+  types?: string[];
+  structuredFormat?: { mainText?: { text: string }; secondaryText?: { text: string } };
+};
+
+/**
+ * Business search (Places API New, Autocomplete). `session` groups the typing
+ * and the final pick into one billed session, which keeps the cost down.
+ */
+export async function searchPlaces(query: string, session?: string): Promise<PlaceSuggestion[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   if (!placesConfigured()) {
     return SAMPLE.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).map(({ placeId, name, address }) => ({ placeId, name, address }));
   }
-  // Places API (New): Autocomplete, biased to Singapore.
   const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": KEY },
     body: JSON.stringify({
       input: q,
       includedRegionCodes: ["sg"],
-      includedPrimaryTypes: ["establishment"],
       locationBias: { circle: { center: { latitude: 1.3521, longitude: 103.8198 }, radius: 30000 } },
+      ...(session ? { sessionToken: session } : {}),
     }),
-    next: { revalidate: 0 },
+    cache: "no-store",
   });
-  if (!res.ok) throw new Error(`Places autocomplete failed: ${res.status}`);
-  const json = (await res.json()) as {
-    suggestions?: Array<{ placePrediction?: { placeId: string; structuredFormat?: { mainText?: { text: string }; secondaryText?: { text: string } } } }>;
-  };
-  return (json.suggestions ?? [])
-    .map((s) => s.placePrediction)
-    .filter((p): p is NonNullable<typeof p> => !!p)
-    .map((p) => ({
-      placeId: p.placeId,
-      name: p.structuredFormat?.mainText?.text ?? "",
-      address: p.structuredFormat?.secondaryText?.text ?? "",
-    }));
+  if (!res.ok) throw await googleError(res, "search");
+  const json = (await res.json()) as { suggestions?: Array<{ placePrediction?: Prediction }> };
+  const all = (json.suggestions ?? []).map((x) => x.placePrediction).filter((p): p is Prediction => !!p);
+  // Prefer businesses over plain street addresses.
+  const businesses = all.filter((p) => p.types?.some((t) => t === "establishment" || t === "point_of_interest"));
+  return (businesses.length ? businesses : all).map((p) => ({
+    placeId: p.placeId,
+    name: p.structuredFormat?.mainText?.text ?? "",
+    address: p.structuredFormat?.secondaryText?.text ?? "",
+  }));
 }
 
-export async function placeDetails(placeId: string): Promise<PlaceDetails | null> {
+export async function placeDetails(placeId: string, session?: string): Promise<PlaceDetails | null> {
   if (!placesConfigured()) return SAMPLE.find((s) => s.placeId === placeId) ?? null;
-  const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
+  const qs = session ? `?sessionToken=${encodeURIComponent(session)}` : "";
+  const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}${qs}`, {
     headers: {
       "X-Goog-Api-Key": KEY,
       "X-Goog-FieldMask": "id,displayName,formattedAddress,rating,userRatingCount,googleMapsUri",
     },
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
-  if (!res.ok) return null;
+  if (res.status === 404) return null;
+  if (!res.ok) throw await googleError(res, "place lookup");
   const p = (await res.json()) as {
     id: string;
     displayName?: { text: string };

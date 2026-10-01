@@ -18,11 +18,11 @@ export function QrTool() {
   const [downloading, setDownloading] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  async function pick(s: Suggestion) {
+  async function pick(s: Suggestion, session: string) {
     setLoading(true);
     setUnlocked(false);
     try {
-      const res = await fetch(`/api/places?id=${encodeURIComponent(s.placeId)}`);
+      const res = await fetch(`/api/places?id=${encodeURIComponent(s.placeId)}&session=${session}`);
       const json = (await res.json()) as { details?: Details };
       setDetails(json.details ?? null);
     } finally {

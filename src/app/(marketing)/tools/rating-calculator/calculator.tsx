@@ -22,11 +22,11 @@ export function RatingCalculator() {
   const [gate, setGate] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
-  async function pick(s: Suggestion) {
+  async function pick(s: Suggestion, session: string) {
     setLoading(true);
     setUnlocked(false);
     try {
-      const res = await fetch(`/api/places?id=${encodeURIComponent(s.placeId)}`);
+      const res = await fetch(`/api/places?id=${encodeURIComponent(s.placeId)}&session=${session}`);
       const json = (await res.json()) as { details?: Details };
       setDetails(json.details ?? null);
       if (json.details?.rating != null) setTarget(Math.min(4.9, Math.round((json.details.rating + 0.3) * 10) / 10));

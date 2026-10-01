@@ -6,7 +6,8 @@ import { Loader, Search } from "@/components/ui/icons";
 export type Suggestion = { placeId: string; name: string; address: string };
 
 type Props = {
-  onSelect: (s: Suggestion) => void;
+  /** `session` must be passed to the details lookup so Google bills one session. */
+  onSelect: (s: Suggestion, session: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
 };
@@ -19,7 +20,10 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
   const [loading, setLoading] = useState(false);
   const [sample, setSample] = useState(false);
   const [active, setActive] = useState(-1);
+  const [error, setError] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
+  const session = useRef<string>("");
+  const newSession = () => (session.current = crypto.randomUUID());
 
   useEffect(() => {
     if (q.trim().length < 2) return;
@@ -27,8 +31,10 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/places?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
-        const json = (await res.json()) as { suggestions?: Suggestion[]; sample?: boolean };
+        if (!session.current) newSession();
+        const res = await fetch(`/api/places?q=${encodeURIComponent(q)}&session=${session.current}`, { signal: ctrl.signal });
+        const json = (await res.json()) as { suggestions?: Suggestion[]; sample?: boolean; error?: string };
+        setError(res.ok ? null : json.error ?? "Search failed. Please try again.");
         setItems(json.suggestions ?? []);
         setSample(!!json.sample);
         setOpen(true);
@@ -56,7 +62,8 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
   function choose(s: Suggestion) {
     setQ(s.name);
     setOpen(false);
-    onSelect(s);
+    onSelect(s, session.current);
+    session.current = ""; // the next search starts a new billing session
   }
 
   return (
@@ -83,6 +90,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
         />
         {loading ? <Loader className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 animate-spin text-fg-tertiary" /> : null}
       </div>
+      {error && q.trim().length >= 2 ? <p className="t-small mt-2 text-danger">{error}</p> : null}
       {open && q.trim().length >= 2 && items.length > 0 ? (
         <ul role="listbox" className="card absolute z-20 mt-2 max-h-80 w-full overflow-auto p-1 shadow-card">
           {items.map((s, i) => (

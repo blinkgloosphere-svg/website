@@ -10,16 +10,18 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const q = url.searchParams.get("q");
   const id = url.searchParams.get("id");
+  const session = url.searchParams.get("session") ?? undefined;
   try {
     if (id) {
-      const details = await placeDetails(id);
+      const details = await placeDetails(id, session);
       if (!details) return NextResponse.json({ error: "Not found" }, { status: 404 });
       return NextResponse.json({ details, sample: !placesConfigured() });
     }
-    const suggestions = await searchPlaces(q ?? "");
+    const suggestions = await searchPlaces(q ?? "", session);
     return NextResponse.json({ suggestions, sample: !placesConfigured() });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Search failed";
-    return NextResponse.json({ error: message }, { status: 502 });
+    console.error("[places]", message);
+    return NextResponse.json({ error: "Google search is unavailable right now.", detail: message }, { status: 502 });
   }
 }

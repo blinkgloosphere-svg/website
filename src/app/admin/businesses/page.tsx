@@ -91,6 +91,9 @@ export default async function BusinessesPage({ searchParams }: { searchParams: P
                       <Link href={`/r/${b.id}`} target="_blank" className="btn btn-ghost btn-sm">
                         Page
                       </Link>
+                      <a href={`/admin/businesses/${b.id}/view-as`} className="btn btn-ghost btn-sm">
+                        Dashboard
+                      </a>
                       <Link href={`/admin/businesses/${b.id}`} className="btn btn-secondary btn-sm">
                         Manage
                       </Link>

@@ -33,6 +33,9 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
             <Link href={`/r/${business.id}`} target="_blank" className="btn btn-secondary btn-sm">
               <ExternalLink className="size-4" /> Open review page
             </Link>
+            <a href={`/admin/businesses/${business.id}/view-as`} className="btn btn-primary btn-sm">
+              View as client
+            </a>
           </>
         }
       />

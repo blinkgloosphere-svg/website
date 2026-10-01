@@ -159,10 +159,10 @@ function businessPatchToRow(patch: Partial<Omit<Business, "id">>): Partial<Busin
 
 type Result<T> = { data: T | null; error: { message: string } | null };
 
-function unwrap<T>(res: Result<T>, context: string): T {
+function unwrap<T>(res: Result<T>, context: string): NonNullable<T> {
   if (res.error) throw new Error(`${context}: ${res.error.message}`);
-  if (res.data === null) throw new Error(`${context}: no data returned`);
-  return res.data;
+  if (res.data === null || res.data === undefined) throw new Error(`${context}: no data returned`);
+  return res.data as NonNullable<T>;
 }
 
 function unwrapCount(res: { count: number | null; error: { message: string } | null }, context: string): number {

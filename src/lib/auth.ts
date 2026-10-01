@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getRepo, hasSupabase } from "@/lib/data";
 import type { Business } from "@/lib/types";
@@ -59,13 +60,31 @@ export async function requireAdmin(): Promise<AdminPrincipal> {
  * Guards owner dashboard pages. Redirects to login when signed out. Returns
  * null when the signed-in user has no business linked yet (owner_id unset).
  */
+/** Cookie set by an admin to open a client's dashboard as that client. */
+export const VIEW_AS_COOKIE = "blink_view_as";
+
+/** The business an admin is currently viewing as, if any. Only honoured for admins (or in preview). */
+export async function viewAsBusinessId(): Promise<string | null> {
+  return (await cookies()).get(VIEW_AS_COOKIE)?.value ?? null;
+}
+
 export async function requireOwnerBusiness(): Promise<Business | null> {
+  const viewAs = await viewAsBusinessId();
+  const repo = await getRepo();
   if (isPreview()) {
-    const [first] = await (await getRepo()).listBusinesses({ sort: "name" });
+    if (viewAs) {
+      const b = await repo.getBusiness(viewAs);
+      if (b) return b;
+    }
+    const [first] = await repo.listBusinesses({ sort: "name" });
     return first ?? null;
   }
   const user = await getSession();
   if (!user) redirect(`${LOGIN_PATH}?next=/dashboard`);
+  if (viewAs && (await isAdminUser(user.id))) {
+    const b = await repo.getBusiness(viewAs);
+    if (b) return b;
+  }
   const { getBusinessByOwnerId } = await import("@/lib/data/supabase-repo");
   return getBusinessByOwnerId(user.id);
 }

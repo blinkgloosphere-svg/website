@@ -90,3 +90,18 @@ A single owner can be re-invited at any time from the admin UI (it calls
 - Review counters on each business are maintained by database triggers. If
   they ever look wrong, run `select public.recompute_business_stats();`.
 - Logos live in the public `logos` bucket under `<businessId>/<filename>`.
+
+## Before sending the customer invites (`--invite`)
+
+1. **Use your own email sender.** Supabase's built-in email only sends a few
+   emails per hour, which is not enough for 56 owners. In Supabase go to
+   Authentication > Emails > SMTP Settings and enter Resend's SMTP details
+   (host `smtp.resend.com`, port 465, user `resend`, password = your Resend API key,
+   sender e.g. `notifications@reviews.blink.sg`).
+2. **Point the links at the live site.** Authentication > URL Configuration:
+   Site URL `https://reviews.blink.sg`, and add
+   `https://reviews.blink.sg/auth/callback` to Redirect URLs.
+   Only send invites once the site is live on that address, or the links in
+   the emails will not work.
+3. Optional: edit the "Reset password" email template so it reads as a
+   welcome, e.g. "Your Blink review dashboard is ready. Set your password."

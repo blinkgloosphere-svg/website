@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blink Reviews
 
-## Getting Started
+Customer review platform for Singapore businesses: a branded review page per client with smart routing (4 to 5 stars to Google, 1 to 3 stars to private feedback), printable QR codes, a client dashboard, a super admin, and two lead-capture tools.
 
-First, run the development server:
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase · Resend · Vercel.
+
+## Run it
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without Supabase keys the app runs in **preview mode**: it reads `data/gloosphere-export.json` (not committed) and shows every screen read-only with the real imported data. Login is bypassed in preview; `/admin` and `/dashboard` open directly.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Connect Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See `supabase/README.md`. In short: create a project, run `supabase/migrations/0001_init.sql`, put the keys in `.env.local`, then import:
 
-## Learn More
+```bash
+npx tsx scripts/import-export.ts --data data/gloosphere-export.json           # dry run
+npx tsx scripts/import-export.ts --data data/gloosphere-export.json --commit  # write
+npx tsx scripts/import-export.ts --data data/gloosphere-export.json --commit --invite  # email owners
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Map
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Path | What |
+|---|---|
+| `/` | Marketing site (hero, client logo marquee, 4 feature cards, how it works, pricing, FAQ, about, demo CTA) |
+| `/tools/qr-code-generator` | Free QR poster tool, lead-gated download |
+| `/tools/rating-calculator` | Free rating calculator, lead-gated result |
+| `/r/[id]` | Customer review page. `/reviewsoftware.html?id=` from the old QR codes rewrites here |
+| `/login` | Client and admin login |
+| `/dashboard` | Client: overview, reviews, private feedback, QR code, review page settings |
+| `/admin` | Super admin: overview, businesses, reviews, leads, campaigns |
+| `/api/places` | Server-side Google Places search (key never reaches the browser) |
+| `/api/reviews`, `/api/leads` | Submission endpoints |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data layer
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`src/lib/data/repo.ts` is the interface. `preview-repo.ts` reads the export; `supabase-repo.ts` talks to Postgres. `getRepo()` picks one from the environment, so pages never know which is active.

@@ -57,7 +57,7 @@ export function RatingCalculator() {
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_420px]">
-      <div>
+      <div className="min-w-0">
         <label className="label">Find your business on Google</label>
         <BusinessSearch onSelect={pick} autoFocus />
         {loading ? (
@@ -104,7 +104,7 @@ export function RatingCalculator() {
         )}
       </div>
 
-      <div className="lg:sticky lg:top-24 lg:self-start">
+      <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div className="card-dark p-7">
           <p className="t-small text-dark-fg-secondary">5-star reviews needed</p>
           {details && details.rating != null ? (

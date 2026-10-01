@@ -22,10 +22,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (q.trim().length < 2) {
-      setItems([]);
-      return;
-    }
+    if (q.trim().length < 2) return;
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       setLoading(true);
@@ -86,7 +83,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
         />
         {loading ? <Loader className="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 animate-spin text-fg-tertiary" /> : null}
       </div>
-      {open && items.length > 0 ? (
+      {open && q.trim().length >= 2 && items.length > 0 ? (
         <ul role="listbox" className="card absolute z-20 mt-2 max-h-80 w-full overflow-auto p-1 shadow-card">
           {items.map((s, i) => (
             <li key={s.placeId} role="option" aria-selected={i === active}>

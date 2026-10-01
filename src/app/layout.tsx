@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   description: "Customer reviews, local SEO and search visibility for Singapore businesses. Get seen. Build trust. Grow.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://reviews.blink.sg"),
-  icons: { icon: "/brand/icon.png" },
+  icons: { icon: "/brand/blink-icon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

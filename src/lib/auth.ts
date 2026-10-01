@@ -1,4 +1,3 @@
-import "server-only";
 import { redirect } from "next/navigation";
 import { getRepo, hasSupabase } from "@/lib/data";
 import type { Business } from "@/lib/types";

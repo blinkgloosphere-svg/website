@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRepo } from "@/lib/data";
 import { subscriptionState } from "@/lib/types";
 import { ReviewFlow } from "./review-flow";
 import { ExpiredNotice } from "./expired";
+import { PoweredByBlink } from "@/components/ui/powered-by";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -36,6 +38,11 @@ export default async function ReviewPage({ params }: Props) {
         ) : (
           <ExpiredNotice businessName={business.config.companyName} logo={business.config.companyLogoUrl} />
         )}
+        <div className="mt-8 flex justify-center">
+          <Link href="/" aria-label="Powered by Blink">
+            <PoweredByBlink size="sm" />
+          </Link>
+        </div>
       </div>
     </main>
   );

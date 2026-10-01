@@ -17,7 +17,6 @@ export function ExpiredNotice({ businessName, logo }: { businessName: string; lo
       <a href={whatsappLink(`Hi ${site.brand}, I'd like to renew the Blink Reviews subscription for ${businessName}.`)} target="_blank" rel="noopener" className="btn btn-brand btn-lg mt-6 w-full">
         Renew on WhatsApp
       </a>
-      <p className="mt-6 text-xs text-white/40">Powered by {site.name}</p>
     </section>
   );
 }

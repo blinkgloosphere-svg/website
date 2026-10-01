@@ -10,9 +10,14 @@ type Logo = { id: string; name: string; src: string };
 export async function LogoMarquee() {
   const repo = await getRepo();
   const businesses = await repo.listBusinesses({ sort: "name" });
+  const seen = new Set<string>();
   const logos: Logo[] = businesses
     .filter((b) => b.config.companyLogoUrl?.startsWith("/logos/"))
-    .map((b) => ({ id: b.id, name: b.name, src: b.config.companyLogoUrl as string }));
+    // Internal and test accounts are not clients.
+    .filter((b) => !/^blink\b/i.test(b.name.trim()))
+    .map((b) => ({ id: b.id, name: b.name, src: b.config.companyLogoUrl as string }))
+    // Several outlets of one brand share a logo; show it once.
+    .filter((l) => (seen.has(l.src) ? false : (seen.add(l.src), true)));
 
   if (logos.length === 0) return null;
 
@@ -44,8 +49,9 @@ function Row({ logos, direction }: { logos: Logo[]; direction: "left" | "right" 
               width={150}
               height={64}
               sizes="150px"
-              className="max-h-16 w-auto max-w-[150px] object-contain"
+              className="h-auto max-h-16 w-auto max-w-[150px] object-contain"
               draggable={false}
+              loading="eager"
             />
           </div>
         ))}

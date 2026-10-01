@@ -56,7 +56,7 @@ export function QrTool() {
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_420px]">
-      <div>
+      <div className="min-w-0">
         <label className="label" htmlFor="qr-search">
           Find your business on Google
         </label>
@@ -127,7 +127,7 @@ export function QrTool() {
         )}
       </div>
 
-      <div className="lg:sticky lg:top-24 lg:self-start">
+      <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div className="card flex items-center justify-center bg-bg-subtle p-6">
           <QrPoster
             ref={svgRef}

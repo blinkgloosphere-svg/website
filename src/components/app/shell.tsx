@@ -18,7 +18,7 @@ export function AppShell({ title, items, preview, userLabel, children }: Props) 
       <aside className="flex flex-col border-b border-border bg-white md:sticky md:top-0 md:h-dvh md:border-b-0 md:border-r">
         <div className="flex h-16 items-center justify-between gap-3 border-b border-border px-5">
           <Link href="/" aria-label="Blink home">
-            <Image src="/brand/logo-horizontal.png" alt="Blink" width={120} height={38} className="h-8 w-auto" priority />
+            <Image src="/brand/blink-logo-horizontal.png" alt="Blink" width={118} height={28} className="h-7 w-auto" priority />
           </Link>
           <span className="t-small rounded-md bg-bg-muted px-2 py-0.5 font-medium text-fg-secondary">{title}</span>
         </div>

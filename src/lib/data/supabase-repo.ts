@@ -1,4 +1,3 @@
-import "server-only";
 import { randomInt } from "node:crypto";
 import type { AdCampaign, Business, BusinessConfig, Lead, LeadStatus, LeadTool, Metrics, Rating, Review, SocialLink } from "@/lib/types";
 import type { AdCampaignRow, BusinessInsert, BusinessRow, Json, LeadRow, ReviewRow } from "@/lib/supabase/database.types";

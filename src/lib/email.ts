@@ -1,4 +1,3 @@
-import "server-only";
 import { site } from "@/lib/site";
 
 type Mail = { to: string | string[]; subject: string; html: string; replyTo?: string };

@@ -124,7 +124,7 @@ export function About() {
           </p>
         </div>
         <div className="card-dark flex items-center justify-center p-10">
-          <Image src="/brand/logo-stacked-dark.png" alt="Blink" width={360} height={270} className="h-auto w-[260px]" />
+          <Image src="/brand/blink-logo-stacked-dark.png" alt="Blink" width={987} height={772} className="h-auto w-[220px]" />
         </div>
       </div>
     </section>
@@ -165,7 +165,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-bg-subtle">
       <div className="container-x grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
-          <Image src="/brand/logo-horizontal.png" alt="Blink" width={140} height={44} className="h-9 w-auto" />
+          <Image src="/brand/blink-logo-horizontal.png" alt="Blink" width={152} height={36} className="h-8 w-auto" />
           <p className="t-ui mt-4 max-w-xs text-fg-secondary">
             Customer reviews, local SEO and search visibility for Singapore businesses.
           </p>

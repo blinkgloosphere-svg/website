@@ -29,7 +29,7 @@ export function QrDownload({ businessName, url }: { businessName: string; url: s
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+    <div className="grid gap-8 lg:grid-cols-[360px_1fr] [&>*]:min-w-0">
       <div className="card flex items-center justify-center bg-bg-subtle p-6">
         <QrPoster ref={svgRef} businessName={businessName} url={url} theme={theme} width={300} />
       </div>

@@ -10,14 +10,14 @@ export function Hero() {
       <div className="container-x flex flex-col items-center pb-16 pt-14 text-center sm:pt-20">
         <p className="t-eyebrow">{site.tagline}</p>
         <Image
-          src="/brand/logo-stacked.png"
+          src="/brand/blink-logo-stacked.png"
           alt="Blink"
-          width={320}
-          height={240}
+          width={987}
+          height={772}
           priority
-          className="mt-6 h-auto w-[240px] sm:w-[300px]"
+          className="mt-8 h-auto w-[200px] sm:w-[240px]"
         />
-        <Stars value={5} size={40} className="mt-2" />
+        <Stars value={5} size={36} className="mt-6" />
         <h1 className="t-display mt-6 max-w-4xl text-balance">Get seen. Build trust. Grow.</h1>
         <p className="t-lead mt-5 max-w-2xl text-pretty">
           Bring customer reviews, local SEO and search visibility together with Blink.

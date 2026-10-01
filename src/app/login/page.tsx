@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Link href="/" aria-label="Blink home">
-            <Image src="/brand/logo-stacked.png" alt="Blink" width={160} height={120} className="mx-auto h-auto w-32" priority />
+            <Image src="/brand/blink-logo-stacked.png" alt="Blink" width={987} height={772} className="mx-auto h-auto w-28" priority />
           </Link>
           <h1 className="t-title-2 mt-4">Business login</h1>
           <p className="t-ui mt-1 text-fg-secondary">Sign in to see your reviews and manage your page.</p>

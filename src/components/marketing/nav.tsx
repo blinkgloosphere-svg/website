@@ -8,7 +8,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur">
       <div className="container-x flex h-16 items-center justify-between gap-6">
         <Link href="/" className="flex items-center" aria-label="Blink Reviews home">
-          <Image src="/brand/logo-horizontal.png" alt="Blink" width={140} height={44} priority className="h-9 w-auto" />
+          <Image src="/brand/blink-logo-horizontal.png" alt="Blink" width={152} height={36} priority className="h-8 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">

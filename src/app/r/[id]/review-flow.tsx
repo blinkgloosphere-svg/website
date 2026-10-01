@@ -73,25 +73,10 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
     }
   }
 
-  const Card = ({ children }: { children: React.ReactNode }) => (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 text-center shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur sm:p-9">
-      {children}
-    </section>
-  );
-
-  const Logo = () =>
-    config.companyLogoUrl ? (
-      <div className="mx-auto mb-6 inline-flex max-w-full items-center justify-center rounded-2xl bg-white px-5 py-3">
-        <Image src={config.companyLogoUrl} alt={config.companyName} width={320} height={120} className="h-auto max-h-24 w-auto max-w-[260px] object-contain" priority />
-      </div>
-    ) : (
-      <p className="mb-6 text-lg font-semibold">{config.companyName}</p>
-    );
-
   if (step === "rate") {
     return (
       <Card>
-        <Logo />
+        <Logo config={config} />
         <h1 className="text-balance text-[28px] font-semibold leading-tight tracking-tight sm:text-[32px]">{config.mainHeadline}</h1>
         <p className="mt-3 text-[15px] text-white/60">{config.mainSubhead}</p>
         <div className="mt-8 flex justify-center gap-2" role="radiogroup" aria-label="Your rating">
@@ -180,6 +165,24 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
       <p className="mt-3 text-[15px] text-white/60">{config.feedbackSuccessText}</p>
       <Socials links={config.socialLinks} />
     </Card>
+  );
+}
+
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 text-center shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur sm:p-9">
+      {children}
+    </section>
+  );
+}
+
+function Logo({ config }: { config: BusinessConfig }) {
+  return config.companyLogoUrl ? (
+    <div className="mx-auto mb-6 inline-flex max-w-full items-center justify-center rounded-2xl bg-white px-5 py-3">
+      <Image src={config.companyLogoUrl} alt={config.companyName} width={320} height={120} className="h-auto max-h-24 w-auto max-w-[260px] object-contain" priority />
+    </div>
+  ) : (
+    <p className="mb-6 text-lg font-semibold">{config.companyName}</p>
   );
 }
 

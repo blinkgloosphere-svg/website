@@ -1,4 +1,3 @@
-import "server-only";
 import type { Repo } from "./repo";
 import { previewRepo } from "./preview-repo";
 

@@ -31,6 +31,8 @@ const LOCAL_MEDIA = mediaMap as Record<string, string>;
 export function localizeImage(url: unknown): string | null {
   if (typeof url !== "string" || !url) return null;
   if (url.includes("placehold.co") || url.includes("example.com")) return null;
+  // Gloosphere's old default logo (a smiley) was used when a client had none.
+  if (/gloosphere-business-reply-logo/i.test(url)) return null;
   const local = LOCAL_MEDIA[url] ?? LOCAL_MEDIA[url.replace(/^http:/, "https:")];
   if (local) return local;
   try {

@@ -54,20 +54,21 @@ export async function POST(req: Request) {
     saved = false;
   }
 
-  // Owners get an email for private feedback, and for every rating if they asked for it.
-  const isFeedback = input.rating <= 3 && input.message.trim().length > 0;
-  if (business.ownerEmail && (isFeedback || business.sendEmailNotifications)) {
+  // Same rule as the old system: email the owner about 1 to 3 star ratings, only if they switched alerts on.
+  if (input.rating <= 3 && business.sendEmailNotifications && business.ownerEmail) {
     await sendEmail({
       to: business.ownerEmail,
-      subject: isFeedback ? `Private feedback (${input.rating}★) for ${business.config.companyName}` : `New ${input.rating}★ rating for ${business.config.companyName}`,
+      subject: `New ${input.rating}-star review for ${business.name}`,
       html: layout(
-        isFeedback ? "A customer left private feedback" : "A customer rated you",
-        table(
-          row("Rating", `${input.rating} out of 5`) +
-            row("Name", input.name || "Not given") +
-            row("Contact", input.email || "Not given") +
-            row("Message", input.message || "No message"),
-        ) + button(`${site.url}/dashboard`, "Open your dashboard"),
+        `Negative review alert for ${business.name}`,
+        `<p style="font-size:15px;color:#62666d">A customer left a low rating. Blink kept it off Google so you can follow up first.</p>` +
+          table(
+            row("Rating", "★".repeat(input.rating)) +
+              row("From", input.name || "Anonymous") +
+              row("Email / phone", input.email || null) +
+              row("Message", input.message || "No message"),
+          ) +
+          button(`${site.url}/dashboard/feedback`, "Open your dashboard"),
       ),
     });
   }

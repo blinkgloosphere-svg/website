@@ -27,8 +27,9 @@ export function Hero() {
             Book a demo
             <ArrowRight className="size-4" aria-hidden />
           </Link>
-          <Link href="/#solutions" className="btn btn-secondary btn-lg">
-            Explore solutions
+          <Link href="/#film" className="btn btn-secondary btn-lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
+            Watch the film
           </Link>
         </div>
       </div>

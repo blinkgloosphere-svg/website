@@ -26,7 +26,18 @@ export function HowItWorks() {
       <div className="container-x">
         <div className="max-w-3xl">
           <h2 className="t-title-1">Live in a week. Working every day after.</h2>
-          <p className="t-lead mt-4">No app for your customers to install, nothing for your staff to learn.</p>
+          <p className="t-lead mt-4">No app for your customers to install, nothing for your staff to learn. Watch the two-minute film.</p>
+        </div>
+        <div id="film" className="mt-12 overflow-hidden rounded-[24px] border border-border bg-black shadow-card scroll-mt-24">
+          <video
+            className="block aspect-video w-full"
+            src="/video/blink-promo.mp4"
+            poster="/video/blink-promo-poster.jpg"
+            controls
+            playsInline
+            preload="none"
+            aria-label="Blink Reviews: how it works, 2 minute film with subtitles"
+          />
         </div>
         <ol className="mt-12 grid gap-5 md:grid-cols-3">
           {steps.map((s) => (

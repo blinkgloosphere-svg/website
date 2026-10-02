@@ -31,8 +31,8 @@ export function SettingsForm({ business, preview }: { business: Business; previe
       <label className="flex items-start gap-3 text-[14px]">
         <input type="checkbox" name="sendEmailNotifications" defaultChecked={business.sendEmailNotifications} disabled={preview} className="mt-1 size-4 accent-ink" />
         <span>
-          <span className="block font-medium">Email me every rating</span>
-          <span className="t-small text-fg-tertiary">Private feedback is always emailed to {business.ownerEmail}.</span>
+          <span className="block font-medium">Email me about low ratings</span>
+          <span className="t-small text-fg-tertiary">Every 1 to 3 star rating is sent to {business.ownerEmail}.</span>
         </span>
       </label>
 

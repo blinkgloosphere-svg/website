@@ -28,7 +28,7 @@ export function BusinessEditForm({ business, preview }: { business: Business; pr
         <div className="grid gap-3 sm:grid-cols-3">
           <Toggle name="isActive" label="Page is active" hint="Off shows the renewal notice." defaultChecked={business.isActive} />
           <Toggle name="gatingEnabled" label="Smart routing" hint="1 to 3 stars go to private feedback." defaultChecked={business.gatingEnabled} />
-          <Toggle name="sendEmailNotifications" label="Email every rating" hint="Feedback emails are always sent." defaultChecked={business.sendEmailNotifications} />
+          <Toggle name="sendEmailNotifications" label="Low-rating alerts" hint="Email the owner about every 1 to 3 star rating." defaultChecked={business.sendEmailNotifications} />
         </div>
       </fieldset>
 

@@ -125,7 +125,7 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
         ) : null}
         {config.voucherImageUrl ? (
           <div className="mt-6 overflow-hidden rounded-2xl">
-            <Image src={config.voucherImageUrl} alt="Voucher" width={800} height={450} className="h-auto w-full" />
+            <Image src={config.voucherImageUrl} unoptimized={config.voucherImageUrl.startsWith("http")} alt="Voucher" width={800} height={450} className="h-auto w-full" />
           </div>
         ) : null}
         <Socials links={config.socialLinks} />
@@ -179,7 +179,7 @@ function Card({ children }: { children: React.ReactNode }) {
 function Logo({ config }: { config: BusinessConfig }) {
   return config.companyLogoUrl ? (
     <div className="mx-auto mb-6 inline-flex max-w-full items-center justify-center rounded-2xl bg-white px-5 py-3">
-      <Image src={config.companyLogoUrl} alt={config.companyName} width={320} height={120} className="h-auto max-h-24 w-auto max-w-[260px] object-contain" priority />
+      <Image src={config.companyLogoUrl} unoptimized={config.companyLogoUrl.startsWith("http")} alt={config.companyName} width={320} height={120} className="h-auto max-h-24 w-auto max-w-[260px] object-contain" priority />
     </div>
   ) : (
     <p className="mb-6 text-lg font-semibold">{config.companyName}</p>

@@ -89,7 +89,14 @@ export async function extendSubscriptionAction(id: string, months: number): Prom
 export async function toggleActiveAction(id: string, isActive: boolean): Promise<ActionResult> {
   await requireAdmin();
   try {
-    await (await getRepo()).updateBusiness(id, { isActive });
+    const repo = await getRepo();
+    const before = await repo.getBusiness(id);
+    const after = await repo.updateBusiness(id, { isActive });
+    // Same as the old system: tell the owner when an active page is switched off.
+    if (before?.isActive && !isActive) {
+      const { sendRenewalEmail } = await import("@/lib/renewals");
+      await sendRenewalEmail(after, "deactivated");
+    }
     revalidatePath(`/admin/businesses/${id}`);
     revalidatePath(`/r/${id}`);
     return { ok: true, message: isActive ? "Activated." : "Deactivated." };

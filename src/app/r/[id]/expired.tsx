@@ -7,7 +7,7 @@ export function ExpiredNotice({ businessName, logo }: { businessName: string; lo
     <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center backdrop-blur">
       {logo ? (
         <div className="mx-auto mb-6 inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3">
-          <Image src={logo} alt={businessName} width={240} height={90} className="h-auto max-h-20 w-auto object-contain" />
+          <Image src={logo} unoptimized={logo.startsWith("http")} alt={businessName} width={240} height={90} className="h-auto max-h-20 w-auto object-contain" />
         </div>
       ) : null}
       <h1 className="text-[26px] font-semibold leading-tight tracking-tight">This review page is paused</h1>

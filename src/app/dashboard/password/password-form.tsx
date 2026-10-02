@@ -18,7 +18,12 @@ export function PasswordForm() {
     if (pw.length < 8) return setMsg({ kind: "error", text: "Use at least 8 characters." });
     if (pw !== pw2) return setMsg({ kind: "error", text: "The two passwords don't match." });
     setBusy(true);
-    const { error } = await createClient().auth.updateUser({ password: pw });
+    let error: { message: string } | null;
+    try {
+      ({ error } = await createClient().auth.updateUser({ password: pw }));
+    } catch {
+      error = { message: "Could not reach the login server. Check your connection and try again." };
+    }
     setBusy(false);
     if (error) return setMsg({ kind: "error", text: error.message });
     setMsg({ kind: "success", text: "Password saved. Taking you to your dashboard…" });

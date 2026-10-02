@@ -3,8 +3,10 @@
  * exactly which variable is missing and where to find it.
  */
 
-function read(name: string, hint: string): string {
-  const value = process.env[name];
+// NEXT_PUBLIC_* values must be read with literal `process.env.X` so Next can
+// inline them into the browser bundle; a dynamic `process.env[name]` is
+// undefined in the browser.
+function read(name: string, value: string | undefined, hint: string): string {
   if (!value) {
     throw new Error(`Missing environment variable ${name}. ${hint} Add it to .env.local (see supabase/README.md).`);
   }
@@ -12,14 +14,14 @@ function read(name: string, hint: string): string {
 }
 
 export const supabaseUrl = () =>
-  read("NEXT_PUBLIC_SUPABASE_URL", "This is the Project URL under Project Settings > API.");
+  read("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL, "This is the Project URL under Project Settings > API.");
 
 export const supabaseAnonKey = () =>
-  read("NEXT_PUBLIC_SUPABASE_ANON_KEY", "This is the anon/public key under Project Settings > API.");
+  read("NEXT_PUBLIC_SUPABASE_ANON_KEY", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, "This is the anon/public key under Project Settings > API.");
 
 /** Server-only. Bypasses row level security; never expose to the browser. */
 export const supabaseServiceRoleKey = () =>
-  read("SUPABASE_SERVICE_ROLE_KEY", "This is the service_role key under Project Settings > API.");
+  read("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY, "This is the service_role key under Project Settings > API.");
 
 /** Optional; used to build redirect links in auth emails. */
 export const siteUrl = (): string | null => process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ?? null;

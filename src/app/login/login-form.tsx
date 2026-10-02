@@ -18,15 +18,20 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) {
-      setError("Email or password is incorrect.");
-      return;
+    try {
+      const { error } = await createClient().auth.signInWithPassword({ email, password });
+      if (error) {
+        setBusy(false);
+        setError("Email or password is incorrect.");
+        return;
+      }
+      // Keep the spinner while the dashboard loads.
+      router.replace(next);
+      router.refresh();
+    } catch {
+      setBusy(false);
+      setError("Could not reach the login server. Check your connection and try again.");
     }
-    router.replace(next);
-    router.refresh();
   }
 
   async function forgot() {
@@ -36,11 +41,15 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
     }
     setBusy(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/password` });
-    setBusy(false);
-    if (error) setError(error.message);
-    else setSent(true);
+    try {
+      const { error } = await createClient().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/password` });
+      if (error) setError(error.message);
+      else setSent(true);
+    } catch {
+      setError("Could not reach the login server. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (sent) {

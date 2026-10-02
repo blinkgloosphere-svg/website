@@ -124,9 +124,7 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
           </a>
         ) : null}
         {config.voucherImageUrl ? (
-          <div className="mt-6 overflow-hidden rounded-2xl">
-            <Image src={config.voucherImageUrl} unoptimized={config.voucherImageUrl.startsWith("http")} alt="Voucher" width={800} height={450} className="h-auto w-full" />
-          </div>
+          <SafeImage src={config.voucherImageUrl} alt="Voucher" width={800} height={450} className="h-auto w-full" wrapClassName="mt-6 overflow-hidden rounded-2xl" />
         ) : null}
         <Socials links={config.socialLinks} />
       </Card>
@@ -177,12 +175,65 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 function Logo({ config }: { config: BusinessConfig }) {
+  const name = <p className="mb-6 text-lg font-semibold">{config.companyName}</p>;
   return config.companyLogoUrl ? (
-    <div className="mx-auto mb-6 inline-flex max-w-full items-center justify-center rounded-2xl bg-white px-5 py-3">
-      <Image src={config.companyLogoUrl} unoptimized={config.companyLogoUrl.startsWith("http")} alt={config.companyName} width={320} height={120} className="h-auto max-h-24 w-auto max-w-[260px] object-contain" priority />
-    </div>
+    <SafeImage
+      src={config.companyLogoUrl}
+      alt={config.companyName}
+      width={320}
+      height={120}
+      className="h-auto max-h-24 w-auto max-w-[260px] object-contain"
+      wrapClassName="mx-auto mb-6 inline-flex max-w-full items-center justify-center rounded-2xl bg-white px-5 py-3"
+      priority
+      fallback={name}
+    />
   ) : (
-    <p className="mb-6 text-lg font-semibold">{config.companyName}</p>
+    name
+  );
+}
+
+/**
+ * Image that removes itself (or shows `fallback`) when the file can't be
+ * loaded, e.g. a logo still hosted on a server that has gone offline, instead
+ * of a broken-image icon. Also catches failures that happen before hydration.
+ */
+function SafeImage({
+  src,
+  alt,
+  width,
+  height,
+  className,
+  wrapClassName,
+  priority,
+  fallback = null,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className: string;
+  wrapClassName: string;
+  priority?: boolean;
+  fallback?: React.ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <>{fallback}</>;
+  return (
+    <div className={wrapClassName}>
+      <Image
+        src={src}
+        unoptimized={src.startsWith("http")}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        priority={priority}
+        onError={() => setFailed(true)}
+        ref={(img) => {
+          if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+        }}
+      />
+    </div>
   );
 }
 

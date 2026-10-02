@@ -1,0 +1,8 @@
+# never upload private data or local secrets (top-level folders only)
+/data
+/.env*
+!/.env.example
+/brand
+/.next
+/.next-build
+/node_modules

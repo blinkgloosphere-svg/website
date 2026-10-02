@@ -364,3 +364,25 @@ body {
   background: var(--color-bg-subtle);
 }
 }
+
+/* ---------- Intro preloader hand-off ---------- */
+html:not(.intro):not(.intro-mark) .intro-overlay {
+  display: none;
+}
+html.intro body {
+  overflow: hidden;
+}
+html.intro [data-intro] {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(8px);
+}
+html.intro-mark [data-hero-mark] {
+  visibility: hidden;
+}
+html.intro-anim [data-intro] {
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms),
+    filter 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms);
+}

@@ -2,27 +2,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, MessageSquareQuote, Search } from "@/components/ui/icons";
 import { site } from "@/lib/site";
-import { Stars } from "@/components/ui/stars";
 
 export function Hero() {
   return (
     <section className="border-b border-border">
       <div className="container-x flex flex-col items-center pb-16 pt-14 text-center sm:pt-20">
-        <p className="t-eyebrow">{site.tagline}</p>
+        <p className="t-eyebrow" data-intro style={{ "--d": "0ms" } as React.CSSProperties}>
+          {site.tagline}
+        </p>
+        {/* The intro preloader lands exactly on this block, then hands over to it. */}
         <Image
-          src="/brand/blink-logo-stacked.png"
-          alt="Blink"
-          width={987}
-          height={772}
+          data-hero-mark
+          src="/brand/hero-mark.png"
+          alt="Blink, five stars"
+          width={980}
+          height={760}
           priority
-          className="mt-8 h-auto w-[200px] sm:w-[240px]"
+          className="mt-6 h-auto w-[280px] sm:w-[320px]"
         />
-        <Stars value={5} size={36} className="mt-6" />
-        <h1 className="t-display mt-6 max-w-4xl text-balance">Get seen. Build trust. Grow.</h1>
-        <p className="t-lead mt-5 max-w-2xl text-pretty">
+        <h1 className="t-display mt-6 max-w-4xl text-balance" data-intro style={{ "--d": "80ms" } as React.CSSProperties}>
+          Get seen. Build trust. Grow.
+        </h1>
+        <p className="t-lead mt-5 max-w-2xl text-pretty" data-intro style={{ "--d": "180ms" } as React.CSSProperties}>
           Bring customer reviews, local SEO and search visibility together with Blink.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3" data-intro style={{ "--d": "280ms" } as React.CSSProperties}>
           <Link href="/#demo" className="btn btn-primary btn-lg">
             Book a demo
             <ArrowRight className="size-4" aria-hidden />
@@ -34,7 +38,7 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="border-t border-border bg-bg-subtle">
+      <div className="border-t border-border bg-bg-subtle" data-intro style={{ "--d": "380ms" } as React.CSSProperties}>
         <div className="container-x grid gap-6 py-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
           <Pillar icon={<MessageSquareQuote className="size-5" aria-hidden />} title="Customer reviews">
             Turn real customer feedback into a stronger local reputation.

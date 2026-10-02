@@ -119,52 +119,27 @@ export function Faq() {
   );
 }
 
-export function About() {
-  return (
-    <section id="about" className="border-b border-border py-20">
-      <div className="container-x grid items-center gap-10 md:grid-cols-2">
-        <div>
-          <h2 className="t-title-1">Built in Singapore for neighbourhood businesses.</h2>
-          <p className="t-lead mt-4">
-            Blink started with a simple question from a hawker: why do unhappy customers write reviews but happy ones never do?
-            We fixed that with a QR code. Today Blink runs the review pages of cafés, salons, clinics, movers and tuition centres
-            across the island.
-          </p>
-          <p className="t-body mt-4 text-fg-secondary">
-            We print the stands, we set up the pages, and we answer on WhatsApp. No tickets, no bots.
-          </p>
-        </div>
-        <div className="card-dark flex items-center justify-center p-10">
-          <Image src="/brand/blink-logo-stacked-dark.png" alt="Blink" width={987} height={772} className="h-auto w-[220px]" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function DemoCta() {
   return (
-    <section id="demo" className="py-20">
-      <div className="container-x">
-        <div className="card-dark px-8 py-14 text-center md:px-16">
-          <h2 className="t-title-1 text-balance">See your review page before you pay a cent.</h2>
-          <p className="t-lead mt-4 !text-dark-fg-secondary">
-            Send us your business name and we will build a live preview with your logo within one working day.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={whatsappLink("Hi Blink, I'd like a demo of Blink Reviews for my business.")}
-              target="_blank"
-              rel="noopener"
-              className="btn btn-brand btn-lg"
-            >
-              Book a demo on WhatsApp
-              <ArrowRight className="size-4" aria-hidden />
-            </a>
-            <Link href="/tools/qr-code-generator" className="btn btn-lg border-white/20 bg-transparent text-white hover:bg-white/10">
-              Try the free QR tool
-            </Link>
-          </div>
+    <section id="demo" className="bg-[#0f1012] py-24 text-white sm:py-28">
+      <div className="container-x text-center">
+        <h2 className="t-title-1 text-balance">See your review page before you pay a cent.</h2>
+        <p className="t-lead mx-auto mt-4 max-w-2xl !text-dark-fg-secondary">
+          Send us your business name and we will build a live preview with your logo within one working day.
+        </p>
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href={whatsappLink("Hi Blink, I'd like a demo of Blink Reviews for my business.")}
+            target="_blank"
+            rel="noopener"
+            className="btn btn-brand btn-lg"
+          >
+            Book a demo on WhatsApp
+            <ArrowRight className="size-4" aria-hidden />
+          </a>
+          <Link href="/tools/qr-code-generator" className="btn btn-lg border-white/20 bg-transparent text-white hover:bg-white/10">
+            Try the free QR tool
+          </Link>
         </div>
       </div>
     </section>
@@ -199,7 +174,6 @@ export function SiteFooter() {
         <FooterCol
           title="Company"
           links={[
-            ["/#about", "About"],
             ["/admin", "Client login"],
             ["/privacy", "Privacy"],
             ["/terms", "Terms"],

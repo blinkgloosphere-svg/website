@@ -310,6 +310,20 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
     <Card>
       <h1 className="text-[28px] font-semibold leading-tight tracking-tight">Thank you</h1>
       <p className="mt-3 text-[15px] text-white/60">{config.feedbackSuccessText}</p>
+      {/* Low ratings stay private by default; a customer who still wants to post publicly can. Kept small on purpose. */}
+      {config.reviewLink ? (
+        <a
+          href={config.reviewLink}
+          target="_blank"
+          rel="noopener"
+          className="mt-6 inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 px-4 text-[13px] font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
+        >
+          Continue to Google
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M7 17 17 7M8 7h9v9" />
+          </svg>
+        </a>
+      ) : null}
       <Socials links={config.socialLinks} />
     </Card>
   );

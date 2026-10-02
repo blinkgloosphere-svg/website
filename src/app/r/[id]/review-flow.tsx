@@ -310,19 +310,28 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
     <Card>
       <h1 className="text-[28px] font-semibold leading-tight tracking-tight">Thank you</h1>
       <p className="mt-3 text-[15px] text-white/60">{config.feedbackSuccessText}</p>
-      {/* Low ratings stay private by default; a customer who still wants to post publicly can. Kept small on purpose. */}
+      {/* Low ratings stay private by default; a customer who still wants to post publicly can. */}
       {config.reviewLink ? (
-        <a
-          href={config.reviewLink}
-          target="_blank"
-          rel="noopener"
-          className="mt-6 inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 px-4 text-[13px] font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
-        >
-          Continue to Google
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M7 17 17 7M8 7h9v9" />
-          </svg>
-        </a>
+        <div className="mt-7 flex flex-col items-center gap-4">
+          <a href={config.reviewLink} target="_blank" rel="noopener" className="btn btn-lg w-full max-w-[280px] border border-white/20 bg-white/5 text-white hover:bg-white/10">
+            Continue
+          </a>
+          <a
+            href={config.reviewLink}
+            target="_blank"
+            rel="noopener"
+            aria-label="Continue to Google"
+            className="group relative grid size-12 place-items-center rounded-full bg-white shadow-[0_6px_18px_-6px_rgba(0,0,0,0.6)] transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none"
+          >
+            <GoogleG className="size-6" />
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white px-2.5 py-1 text-xs font-medium text-[#16171a] opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              Continue to Google
+            </span>
+          </a>
+        </div>
       ) : null}
       <Socials links={config.socialLinks} />
     </Card>
@@ -413,5 +422,17 @@ function Socials({ links }: { links: BusinessConfig["socialLinks"] }) {
         ))}
       </div>
     </div>
+  );
+}
+
+/** Google's four-colour "G". */
+function GoogleG({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
   );
 }

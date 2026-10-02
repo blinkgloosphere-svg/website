@@ -10,10 +10,12 @@ type Props = {
   onSelect: (s: Suggestion, session: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  /** No border or background: for placing the box inside another field, like the homepage rating check. */
+  bare?: boolean;
 };
 
 /** Google business search box with a suggestion list. Calls the server, never Google directly. */
-export function BusinessSearch({ onSelect, placeholder = "Start typing your business name…", autoFocus }: Props) {
+export function BusinessSearch({ onSelect, placeholder = "Start typing your business name…", autoFocus, bare }: Props) {
   const [q, setQ] = useState("");
   const [items, setItems] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -71,7 +73,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
       <div className="relative">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-fg-tertiary" />
         <input
-          className="input h-12 pl-10 pr-10 text-base"
+          className={bare ? "h-12 w-full bg-transparent pl-10 pr-10 text-base text-fg outline-none placeholder:text-fg-tertiary" : "input h-12 pl-10 pr-10 text-base"}
           value={q}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -92,7 +94,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
       </div>
       {error && q.trim().length >= 2 ? <p className="t-small mt-2 text-danger">{error}</p> : null}
       {open && q.trim().length >= 2 && items.length > 0 ? (
-        <ul role="listbox" className="card absolute z-20 mt-2 max-h-80 w-full overflow-auto p-1 shadow-card">
+        <ul role="listbox" className={`card absolute z-20 mt-2 max-h-80 w-full overflow-auto p-1 text-left shadow-card ${bare ? "mt-4" : ""}`}>
           {items.map((s, i) => (
             <li key={s.placeId} role="option" aria-selected={i === active}>
               <button

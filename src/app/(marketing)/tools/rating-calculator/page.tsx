@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   description: "See your Google rating and find out exactly how many 5-star reviews you need to reach your target.",
 };
 
-export default function RatingCalculatorPage() {
+export default async function RatingCalculatorPage({ searchParams }: { searchParams: Promise<{ place?: string; s?: string }> }) {
+  const sp = await searchParams;
+  // A business picked in the homepage rating check opens here already loaded.
+  const initial = sp.place && /^[\w-]{10,300}$/.test(sp.place) ? { placeId: sp.place, session: sp.s && /^[\w-]{8,64}$/.test(sp.s) ? sp.s : "" } : null;
   return (
     <section className="py-14 sm:py-20">
       <div className="container-x">
@@ -19,7 +22,7 @@ export default function RatingCalculatorPage() {
           </p>
         </div>
         <div className="mt-12">
-          <RatingCalculator />
+          <RatingCalculator initial={initial} />
         </div>
       </div>
     </section>

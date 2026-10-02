@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { BusinessSearch, type Suggestion } from "@/components/tools/business-search";
 import { LeadGate, type LeadDraft } from "@/components/tools/lead-gate";
@@ -15,7 +15,8 @@ function needed(current: number, count: number, target: number): number | null {
   return Math.ceil((count * (target - current)) / (5 - target));
 }
 
-export function RatingCalculator() {
+/** `initial` comes from the homepage rating check: a business the visitor already picked there. */
+export function RatingCalculator({ initial }: { initial?: { placeId: string; session: string } | null }) {
   const [details, setDetails] = useState<Details | null>(null);
   const [loading, setLoading] = useState(false);
   const [target, setTarget] = useState(4.7);
@@ -34,6 +35,13 @@ export function RatingCalculator() {
       setLoading(false);
     }
   }
+
+  const started = useRef(false);
+  useEffect(() => {
+    if (!initial || started.current) return;
+    started.current = true; // run once for the business picked on the homepage
+    void pick({ placeId: initial.placeId, name: "", address: "" }, initial.session);
+  }, [initial]);
 
   const result = useMemo(() => {
     if (!details || details.rating == null) return null;
@@ -59,7 +67,7 @@ export function RatingCalculator() {
     <div className="grid gap-10 lg:grid-cols-[1fr_420px]">
       <div className="min-w-0">
         <label className="label">Find your business on Google</label>
-        <BusinessSearch onSelect={pick} autoFocus />
+        <BusinessSearch onSelect={pick} autoFocus={!initial} />
         {loading ? (
           <p className="t-ui mt-3 flex items-center gap-2 text-fg-secondary">
             <Loader className="size-4 animate-spin" /> Reading your Google rating…

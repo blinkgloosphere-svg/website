@@ -12,7 +12,11 @@ export async function LogoMarquee() {
   const businesses = await repo.listBusinesses({ sort: "name" });
   const seen = new Set<string>();
   const logos: Logo[] = businesses
-    .filter((b) => b.config.companyLogoUrl?.startsWith("/logos/"))
+    // Rescued local files (preview) or the Supabase "logos" bucket (live).
+    .filter((b) => {
+      const u = b.config.companyLogoUrl ?? "";
+      return u.startsWith("/logos/") || u.includes("/storage/v1/object/public/logos/");
+    })
     // Internal and test accounts are not clients.
     .filter((b) => !/^blink\b/i.test(b.name.trim()))
     .map((b) => ({ id: b.id, name: b.name, src: b.config.companyLogoUrl as string }))

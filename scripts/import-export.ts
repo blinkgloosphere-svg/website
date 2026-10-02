@@ -11,6 +11,10 @@
  *   --commit             actually write; without it only counts are printed
  *   --invite             send a password-reset email to every owner (active businesses)
  *   --include-inactive   with --invite, also email owners of inactive businesses
+ *   --admin <email>      create (or reset) the super admin login with a new password
+ *   --temp-passwords     give every owner a temporary password (for logging in before emails are set up)
+ *
+ * New passwords are written only to data/logins/ (private, never committed, never printed).
  *
  * Needs NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Optional
  * NEXT_PUBLIC_SITE_URL is used for the redirect link in reset emails.
@@ -19,6 +23,7 @@
  */
 
 import fs from "node:fs";
+import { randomInt } from "node:crypto";
 import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Business, Review } from "../src/lib/types";
@@ -36,16 +41,18 @@ const ROOT = process.cwd();
 // CLI + env
 // ---------------------------------------------------------------------------
 
-type Args = { data: string; env: string; commit: boolean; invite: boolean; includeInactive: boolean };
+type Args = { data: string; env: string; commit: boolean; invite: boolean; includeInactive: boolean; admin: string | null; tempPasswords: boolean };
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { data: "data/gloosphere-export.json", env: ".env.local", commit: false, invite: false, includeInactive: false };
+  const args: Args = { data: "data/gloosphere-export.json", env: ".env.local", commit: false, invite: false, includeInactive: false, admin: null, tempPasswords: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--data") args.data = argv[++i] ?? args.data;
     else if (a === "--env") args.env = argv[++i] ?? args.env;
     else if (a === "--commit") args.commit = true;
     else if (a === "--invite") args.invite = true;
+    else if (a === "--admin") args.admin = (argv[++i] ?? "").trim().toLowerCase() || null;
+    else if (a === "--temp-passwords") args.tempPasswords = true;
     else if (a === "--include-inactive") args.includeInactive = true;
     else throw new Error(`Unknown argument: ${a}`);
   }
@@ -215,6 +222,83 @@ async function listAllUsers(db: Db): Promise<Map<string, string>> {
 
 type UserStats = { existing: number; created: number; failed: number };
 
+/** Readable but strong password, e.g. Kq7m-Tx3p-9wHd-2cRf (no look-alike characters). */
+function newPassword(): string {
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  return Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => A[randomInt(A.length)]).join("")).join("-");
+}
+
+const LOGIN_DIR = path.join(ROOT, "data", "logins");
+function writePrivate(name: string, text: string) {
+  fs.mkdirSync(LOGIN_DIR, { recursive: true, mode: 0o700 });
+  const file = path.join(LOGIN_DIR, name);
+  fs.writeFileSync(file, text, { mode: 0o600 });
+  return path.relative(ROOT, file);
+}
+const csv = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+
+/** Creates the public "logos" storage bucket if it does not exist yet. */
+async function ensureBucket(db: Db) {
+  const { data } = await db.storage.getBucket("logos");
+  if (data) return "exists";
+  const { error } = await db.storage.createBucket("logos", {
+    public: true,
+    fileSizeLimit: 5 * 1024 * 1024,
+    allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"],
+  });
+  if (error) throw new Error(`create logos bucket: ${errorMessage(error)}`);
+  return "created";
+}
+
+/** Creates or resets the super admin login and records it in admin_users. */
+async function ensureAdmin(db: Db, email: string) {
+  const password = newPassword();
+  const users = await listAllUsers(db);
+  let id = users.get(email);
+  if (id) {
+    const { error } = await db.auth.admin.updateUserById(id, { password, email_confirm: true });
+    if (error) throw new Error(`update admin: ${errorMessage(error)}`);
+  } else {
+    const { data, error } = await db.auth.admin.createUser({ email, password, email_confirm: true });
+    if (error || !data.user) throw new Error(`create admin: ${errorMessage(error ?? "no user")}`);
+    id = data.user.id;
+  }
+  const { error } = await db.from("admin_users").upsert({ user_id: id, email }, { onConflict: "user_id" });
+  if (error) throw new Error(`admin_users: ${errorMessage(error)}`);
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://reviews.blink.sg";
+  return writePrivate(
+    "super-admin.txt",
+    `Blink Reviews: super admin login\n\nLogin page: ${site}/login\nEmail:      ${email}\nPassword:   ${password}\n\nChange it after the first login at ${site}/dashboard/password.\n`,
+  );
+}
+
+/** Gives every owner a temporary password and writes the list for Blink to send out. */
+async function setTempPasswords(db: Db, businesses: Business[], ownerIds: Map<string, string>) {
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://reviews.blink.sg";
+  const rows = [["Business", "Active", "Login email", "Temporary password", "Login page", "Review link"]];
+  let set = 0, failed = 0;
+  const done = new Map<string, string>();
+  for (const b of [...businesses].sort((x, y) => x.name.localeCompare(y.name))) {
+    const id = b.ownerEmail ? ownerIds.get(b.ownerEmail) : undefined;
+    if (!id) continue;
+    let pw = done.get(id);
+    if (!pw) {
+      pw = newPassword();
+      const { error } = await db.auth.admin.updateUserById(id, { password: pw });
+      if (error) {
+        failed++;
+        console.error(`  password failed: ${errorMessage(error)}`);
+        continue;
+      }
+      done.set(id, pw);
+      set++;
+    }
+    rows.push([b.name, b.isActive ? "yes" : "no", b.ownerEmail, pw, `${site}/login`, `${site}/r/${b.id}`]);
+  }
+  const file = writePrivate("client-logins.csv", rows.map((r) => r.map(csv).join(",")).join("\n") + "\n");
+  return { set, failed, file };
+}
+
 /** Ensures an auth user per distinct owner email; returns email -> user id. */
 async function ensureOwners(db: Db, emails: string[]): Promise<{ ids: Map<string, string>; stats: UserStats }> {
   const ids = await listAllUsers(db);
@@ -244,7 +328,7 @@ function businessRow(b: Business, ownerIds: Map<string, string>): BusinessInsert
     owner_email: b.ownerEmail,
     is_active: b.isActive,
     link_expires_at: b.linkExpiresAt,
-    created_at: b.createdAt ?? undefined,
+    created_at: b.createdAt ?? new Date().toISOString(),
     send_email_notifications: b.sendEmailNotifications,
     gating_enabled: b.gatingEnabled,
     config: toJson(b.config),
@@ -329,7 +413,7 @@ async function main(): Promise<void> {
   console.log(`  distinct owners:   ${ownerEmails.length}`);
   console.log(`  local logo files:  ${logos.present} found, ${logos.missing} missing`);
 
-  if (!args.commit && !args.invite) {
+  if (!args.commit && !args.invite && !args.admin) {
     console.log("\nDry run. Re-run with --commit to import, --invite to send password emails.");
     return;
   }
@@ -338,7 +422,14 @@ async function main(): Promise<void> {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
+  if (args.admin) {
+    console.log("\nSuper admin login");
+    console.log(`  saved to ${await ensureAdmin(db, args.admin)} (password not shown here)`);
+  }
+
   if (args.commit) {
+    console.log("\nLogo storage bucket");
+    console.log(`  ${await ensureBucket(db)}`);
     console.log("\nUploading logos");
     const uploads = await uploadAllLogos(db, data.businesses);
     console.log(`  uploaded ${uploads.uploaded}, missing ${uploads.missing}, failed ${uploads.failed}`);
@@ -367,6 +458,12 @@ async function main(): Promise<void> {
     console.log("\nImport complete");
     console.log(`  businesses ${nBusinesses}, reviews ${nReviews}, campaigns ${nCampaigns}`);
     console.log(`  businesses without an owner account: ${businessRows.filter((r) => !r.owner_id).length}`);
+
+    if (args.tempPasswords) {
+      console.log("\nTemporary passwords for owners");
+      const t = await setTempPasswords(db, data.businesses, owners.ids);
+      console.log(`  set ${t.set}, failed ${t.failed}; list saved to ${t.file} (not shown here)`);
+    }
   }
 
   if (args.invite) {

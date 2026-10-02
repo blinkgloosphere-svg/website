@@ -357,9 +357,14 @@ alter table public.admin_users enable row level security;
 revoke all on table public.businesses from anon;
 grant select (id, name, is_active, link_expires_at, gating_enabled, config) on public.businesses to anon;
 
+-- Visitors see only the public columns. Logged-in clients see only their own business.
 drop policy if exists "businesses public read" on public.businesses;
 create policy "businesses public read" on public.businesses
-  for select to anon, authenticated using (true);
+  for select to anon using (true);
+
+drop policy if exists "businesses owner read" on public.businesses;
+create policy "businesses owner read" on public.businesses
+  for select to authenticated using (owner_id = auth.uid() or public.is_admin());
 
 drop policy if exists "businesses owner update" on public.businesses;
 create policy "businesses owner update" on public.businesses
@@ -431,42 +436,6 @@ with (security_invoker = true) as
 
 grant select on public.business_public to anon, authenticated;
 
--- ---------------------------------------------------------------------------
--- Storage: logos bucket (public read, owners write inside their own folder)
--- ---------------------------------------------------------------------------
-
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('logos', 'logos', true, 5242880, array['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'])
-on conflict (id) do update set public = excluded.public;
-
--- First path segment of an object name must be a business the caller owns.
-create or replace function public.can_write_logo_folder(folder text)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select public.is_admin()
-    or exists (select 1 from public.businesses b where b.id = folder and b.owner_id = auth.uid());
-$$;
-
-drop policy if exists "logos public read" on storage.objects;
-create policy "logos public read" on storage.objects
-  for select using (bucket_id = 'logos');
-
-drop policy if exists "logos owner insert" on storage.objects;
-create policy "logos owner insert" on storage.objects
-  for insert to authenticated
-  with check (bucket_id = 'logos' and public.can_write_logo_folder((storage.foldername(name))[1]));
-
-drop policy if exists "logos owner update" on storage.objects;
-create policy "logos owner update" on storage.objects
-  for update to authenticated
-  using (bucket_id = 'logos' and public.can_write_logo_folder((storage.foldername(name))[1]))
-  with check (bucket_id = 'logos' and public.can_write_logo_folder((storage.foldername(name))[1]));
-
-drop policy if exists "logos owner delete" on storage.objects;
-create policy "logos owner delete" on storage.objects
-  for delete to authenticated
-  using (bucket_id = 'logos' and public.can_write_logo_folder((storage.foldername(name))[1]));
+-- Storage: the public "logos" bucket is created through the Storage API by the
+-- import script. All uploads go through the server with the service key, so no
+-- storage policies are needed here.

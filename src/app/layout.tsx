@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { INTRO_BOOT } from "@/components/intro/preloader";
 
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT }} />
+        {/* Decides before first paint whether the intro plays (no flash of the hero). */}
+        <Script id="intro-boot" strategy="beforeInteractive">
+          {INTRO_BOOT}
+        </Script>
       </head>
       <body className="min-h-dvh bg-bg text-fg antialiased">{children}</body>
     </html>

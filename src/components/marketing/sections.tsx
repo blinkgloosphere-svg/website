@@ -59,17 +59,20 @@ export function Pricing() {
       <div className="container-x">
         <div className="max-w-3xl">
           <h2 className="t-title-1">Simple pricing per outlet.</h2>
-          <p className="t-lead mt-4">One flat price. Setup, printing and support included. Cancel at the end of any term.</p>
+          <p className="t-lead mt-4">One upfront price per outlet. Setup, printing and support included.</p>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           {plans.map((p) => (
             <div key={p.id} className={`card flex flex-col p-8 ${"featured" in p && p.featured ? "border-ink" : ""}`}>
               <div className="flex items-center justify-between">
-                <h3 className="t-title-3">{p.name}</h3>
-                {"featured" in p && p.featured ? <span className="badge badge-warning">Most popular</span> : null}
+                <h3 className="t-title-3">
+                  {p.icon ? <span className="mr-1.5" aria-hidden>{p.icon}</span> : null}
+                  {p.name}
+                </h3>
+                {"badge" in p && p.badge ? <span className="badge badge-warning">{p.badge}</span> : null}
               </div>
               <div className="mt-5 flex items-baseline gap-2">
-                <span className="t-title-1">S${p.price}</span>
+                <span className="t-title-1">${p.price}</span>
                 <span className="t-ui text-fg-secondary">{p.period}</span>
               </div>
               <p className="t-small mt-1 text-fg-tertiary">{p.note}</p>

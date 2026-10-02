@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, MessageSquareQuote, Search } from "@/components/ui/icons";
 import { site } from "@/lib/site";
+import { Stars } from "@/components/ui/stars";
 
 export function Hero() {
   return (
@@ -11,15 +12,10 @@ export function Hero() {
           {site.tagline}
         </p>
         {/* The intro preloader lands exactly on this block, then hands over to it. */}
-        <Image
-          data-hero-mark
-          src="/brand/hero-mark.png"
-          alt="Blink, five stars"
-          width={980}
-          height={760}
-          priority
-          className="mt-6 h-auto w-[280px] sm:w-[320px]"
-        />
+        <div data-hero-mark className="mt-8 flex w-[240px] flex-col items-center">
+          <Image src="/brand/intro-full.png" alt="Blink" width={1200} height={941} priority className="h-auto w-[240px]" />
+          <Stars value={5} size={36} className="mt-6" />
+        </div>
         <h1 className="t-display mt-6 max-w-4xl text-balance" data-intro style={{ "--d": "80ms" } as React.CSSProperties}>
           Get seen. Build trust. Grow.
         </h1>

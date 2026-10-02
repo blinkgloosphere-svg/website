@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check } from "@/components/ui/icons";
 import { faqs, plans, site, whatsappLink } from "@/lib/site";
+import { WhatsappGlyph } from "@/components/marketing/whatsapp-button";
 
 export function HowItWorks() {
   const steps = [
@@ -85,7 +86,7 @@ export function Pricing() {
                 ))}
               </ul>
               <a
-                href={whatsappLink(`Hi Blink, I'd like to start the ${p.name} plan for my business.`)}
+                href={whatsappLink(`Hi Blink, I'd like to get the ${p.icon ? `${p.icon} ` : ""}${p.name} plan ($${p.price} ${p.period}) for my business.`)}
                 target="_blank"
                 rel="noopener"
                 className={`btn mt-8 ${"featured" in p && p.featured ? "btn-primary" : "btn-secondary"}`}
@@ -158,6 +159,15 @@ export function SiteFooter() {
           <p className="t-ui mt-4 max-w-xs text-fg-secondary">
             Customer reviews, local SEO and search visibility for Singapore businesses.
           </p>
+          <a
+            href={whatsappLink("Hi Blink, I'd like to find out more about Blink Reviews.")}
+            target="_blank"
+            rel="noopener"
+            className="t-ui mt-4 inline-flex items-center gap-2 font-medium text-fg hover:underline"
+          >
+            <WhatsappGlyph className="size-4 text-[#1faa53]" />
+            WhatsApp {site.whatsappDisplay}
+          </a>
         </div>
         <FooterCol
           title="Product"

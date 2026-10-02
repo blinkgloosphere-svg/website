@@ -4,7 +4,9 @@ export const site = {
   brand: "Blink",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://reviews.blink.sg",
   /** WhatsApp number in international format without plus or spaces. */
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? "6500000000",
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "6589889168",
+  /** The same number written for people to read. */
+  whatsappDisplay: process.env.NEXT_PUBLIC_WHATSAPP_DISPLAY || "+65 8988 9168",
   leadsEmail: process.env.LEADS_EMAIL ?? "hello@blink.sg",
   fromEmail: process.env.FROM_EMAIL ?? "Blink Reviews <notifications@reviews.blink.sg>",
   tagline: "Local visibility. Lasting trust.",

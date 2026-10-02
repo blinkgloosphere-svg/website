@@ -46,7 +46,17 @@ export function ReviewList({ reviews, businessNames, showBusiness = false, empty
                 </>
               ) : null}
             </p>
-            {r.message ? <p className="t-ui mt-1 whitespace-pre-line text-fg-secondary">{r.message}</p> : <p className="t-small mt-1 text-fg-tertiary">Rating only, sent to Google.</p>}
+            {r.message ? <p className="t-ui mt-1 whitespace-pre-line text-fg-secondary">{r.message}</p> : <p className="t-small mt-1 text-fg-tertiary">{r.rating <= 3 ? "Low rating. Left without writing feedback." : "Rating only, sent to Google."}</p>}
+            {r.photos?.length ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {r.photos.map((src, i) => (
+                  <a key={src} href={src} target="_blank" rel="noopener noreferrer" className="block size-20 overflow-hidden rounded-lg border border-border bg-bg-subtle" aria-label={`Open photo ${i + 1} from ${r.name || "customer"}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed link from private storage */}
+                    <img src={src} alt="" loading="lazy" className="size-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            ) : null}
           </div>
         </li>
       ))}

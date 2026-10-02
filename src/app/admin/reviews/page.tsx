@@ -3,6 +3,7 @@ import { ReviewList } from "@/components/app/bits";
 import { PageHeader } from "@/components/app/shell";
 import { Search } from "@/components/ui/icons";
 import { getRepo } from "@/lib/data";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 const PAGE = 50;
 
@@ -50,7 +51,7 @@ export default async function AdminReviews({ searchParams }: { searchParams: Pro
       </div>
 
       <div className="card overflow-hidden">
-        <ReviewList reviews={reviews} businessNames={names} showBusiness emptyText="No reviews match." />
+        <ReviewList reviews={await withFeedbackPhotos(reviews)} businessNames={names} showBusiness emptyText="No reviews match." />
       </div>
 
       {pages > 1 ? (

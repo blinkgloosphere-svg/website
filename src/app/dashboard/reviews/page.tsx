@@ -3,6 +3,7 @@ import { ReviewList } from "@/components/app/bits";
 import { PageHeader } from "@/components/app/shell";
 import { requireOwnerBusiness } from "@/lib/auth";
 import { getRepo } from "@/lib/data";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 const PAGE = 50;
 
@@ -28,7 +29,7 @@ export default async function DashboardReviews({ searchParams }: { searchParams:
         <Link href={href(1, "neg")} className={`btn btn-sm ${sp.f === "neg" ? "btn-primary" : "btn-secondary"}`}>1 to 3 stars</Link>
       </div>
       <div className="card overflow-hidden">
-        <ReviewList reviews={reviews} />
+        <ReviewList reviews={await withFeedbackPhotos(reviews)} />
       </div>
       {pages > 1 ? (
         <div className="mt-4 flex items-center justify-between">

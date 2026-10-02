@@ -54,6 +54,9 @@ export interface Repo {
   listReviews(q?: ReviewQuery): Promise<Review[]>;
   countReviews(q?: ReviewQuery): Promise<number>;
   createReview(input: NewReview): Promise<Review>;
+  getReview(id: string): Promise<Review | null>;
+  /** Adds the customer's written feedback to a rating saved earlier. */
+  updateReviewFeedback(id: string, patch: { name: string; email: string; message: string }): Promise<Review>;
   deleteReview(id: string): Promise<void>;
 
   listLeads(): Promise<Lead[]>;

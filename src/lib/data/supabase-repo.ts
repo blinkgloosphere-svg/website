@@ -372,6 +372,17 @@ class SupabaseRepo implements Repo {
     return toReview(created);
   }
 
+  async getReview(id: string): Promise<Review | null> {
+    const { data, error } = await this.db.from("reviews").select("*").eq("id", id).maybeSingle();
+    if (error) throw new Error(`getReview: ${error.message}`);
+    return data ? toReview(data) : null;
+  }
+
+  async updateReviewFeedback(id: string, patch: { name: string; email: string; message: string }): Promise<Review> {
+    const updated = unwrap(await this.db.from("reviews").update(patch).eq("id", id).select("*").single(), "updateReviewFeedback");
+    return toReview(updated);
+  }
+
   async deleteReview(id: string): Promise<void> {
     const { error } = await this.db.from("reviews").delete().eq("id", id);
     if (error) throw new Error(`deleteReview: ${error.message}`);

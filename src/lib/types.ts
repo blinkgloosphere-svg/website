@@ -48,6 +48,8 @@ export type Review = {
   email: string;
   message: string;
   createdAt: string;
+  /** Signed links to photos attached to private feedback (filled on demand, server-side). */
+  photos?: string[];
 };
 
 export type LeadTool = "qr" | "calculator";

@@ -132,6 +132,8 @@ export async function deleteReviewAction(id: string, businessId: string): Promis
   await requireAdmin();
   try {
     await (await getRepo()).deleteReview(id);
+    const { deleteFeedbackPhotos } = await import("@/lib/feedback-photos");
+    await deleteFeedbackPhotos(businessId, id).catch(() => undefined);
     revalidatePath(`/admin/businesses/${businessId}`);
     revalidatePath("/admin/reviews");
     return { ok: true, message: "Review deleted." };

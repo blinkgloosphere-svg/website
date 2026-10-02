@@ -6,6 +6,7 @@ import { getRepo } from "@/lib/data";
 import { daysUntil, fmtDate, fmtNumber, fmtRating } from "@/lib/format";
 import { site, whatsappLink } from "@/lib/site";
 import { subscriptionState } from "@/lib/types";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 export default async function DashboardHome() {
   const business = (await requireOwnerBusiness())!;
@@ -77,7 +78,7 @@ export default async function DashboardHome() {
               View all
             </Link>
           </header>
-          <ReviewList reviews={recent} />
+          <ReviewList reviews={await withFeedbackPhotos(recent)} />
         </section>
         <section className="card self-start p-5">
           <h2 className="t-title-3 mb-4">Rating breakdown</h2>

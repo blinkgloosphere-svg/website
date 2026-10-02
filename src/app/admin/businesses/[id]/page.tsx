@@ -9,6 +9,7 @@ import { fmtDate, fmtNumber, fmtRating } from "@/lib/format";
 import { site } from "@/lib/site";
 import { BusinessEditForm } from "./edit-form";
 import { QuickActions } from "./quick-actions";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; tab?: string }> };
 
@@ -82,7 +83,7 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
               <h2 className="t-title-3">Latest reviews</h2>
             </header>
             <div className="max-h-[720px] overflow-y-auto">
-              <ReviewList reviews={reviews} />
+              <ReviewList reviews={await withFeedbackPhotos(reviews)} />
             </div>
           </section>
         </div>

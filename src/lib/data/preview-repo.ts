@@ -119,6 +119,12 @@ class PreviewRepo implements Repo {
   async createReview(): Promise<Review> {
     throw new ReadOnlyError();
   }
+  async getReview(): Promise<Review | null> {
+    return null;
+  }
+  async updateReviewFeedback(): Promise<Review> {
+    throw new ReadOnlyError();
+  }
   async deleteReview(): Promise<void> {
     throw new ReadOnlyError();
   }

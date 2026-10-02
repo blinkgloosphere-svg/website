@@ -4,6 +4,7 @@ import { PageHeader, Stat } from "@/components/app/shell";
 import { getRepo } from "@/lib/data";
 import { fmtDate, fmtNumber, fmtRating } from "@/lib/format";
 import { subscriptionState } from "@/lib/types";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 export default async function AdminOverview() {
   const repo = await getRepo();
@@ -36,7 +37,7 @@ export default async function AdminOverview() {
               View all
             </Link>
           </header>
-          <ReviewList reviews={recent} businessNames={names} showBusiness />
+          <ReviewList reviews={await withFeedbackPhotos(recent)} businessNames={names} showBusiness />
         </section>
 
         <section className="card overflow-hidden self-start">

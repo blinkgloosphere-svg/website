@@ -21,15 +21,40 @@ const AT = {
 const HANDOFF_MS = 750;
 const FADE_FROM = 0.3; // overlay fade starts at this fraction of the hand-off
 
-const F = meta.frame;
-const CROP = meta.crop;
+const CLIP = meta.clip; // the clip only contains the logo area, at full 4K sharpness
+const HERO = meta.hero; // the hero image's area within the clip
 const ORIGIN = `${meta.starOrigin.x * 100}% ${meta.starOrigin.y * 100}%`;
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
 const outBack = (x: number, s = 2.2) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
 const inOutCubic = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
-type Stage = { x: number; y: number; w: number };
+type Stage = { x: number; y: number; s: number };
+
+/** Logo centre in clip pixels at clip time t (smoothed track measured from the clip). */
+function centreAt(t: number) {
+  const tr = meta.track;
+  if (t <= tr[0].t) return tr[0];
+  for (let i = 1; i < tr.length; i++) {
+    if (t <= tr[i].t) {
+      const a = tr[i - 1], b = tr[i];
+      const k = (t - a.t) / (b.t - a.t);
+      return { cx: a.cx + (b.cx - a.cx) * k, cy: a.cy + (b.cy - a.cy) * k };
+    }
+  }
+  return tr[tr.length - 1];
+}
+
+/** Scale so the logo is a comfortable size, never larger than the clip's real pixels. */
+function scaleFor(vw: number, vh: number) {
+  return Math.min((vw * 0.78) / meta.content.maxW, (vh * 0.6) / meta.content.maxH, 0.42);
+}
+
+/** Stage position that puts the logo's centre at the centre of the screen. */
+function stageAt(t: number, s: number): Stage {
+  const c = centreAt(t);
+  return { x: window.innerWidth / 2 - c.cx * s, y: window.innerHeight / 2 - c.cy * s, s };
+}
 
 function finish(html: HTMLElement) {
   html.classList.add("intro-anim");
@@ -40,18 +65,6 @@ function finish(html: HTMLElement) {
     /* private mode */
   }
   setTimeout(() => html.classList.remove("intro-anim"), 1600);
-}
-
-/** Stage (the full video frame) sized so the logo group is a comfortable width, centred on screen. */
-function startStage(): Stage {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const groupW = Math.min(vw * 0.72, vh * 0.62 * (CROP.width / CROP.height), 560);
-  const w = (groupW / CROP.width) * F.w;
-  const s = w / F.w;
-  const cx = (CROP.left + CROP.width / 2) * s;
-  const cy = (CROP.top + CROP.height / 2) * s;
-  return { x: vw / 2 - cx, y: vh / 2 - cy, w };
 }
 
 /** Plays the Blink logo clip full screen, restores the star at 3 s, then lands on the hero logo. */
@@ -77,7 +90,8 @@ export function IntroPreloader() {
 
     const v = video.current;
     if (!v) return;
-    const from = startStage();
+    const sc = scaleFor(window.innerWidth, window.innerHeight);
+    let from = stageAt(0, sc);
     const frozen = Number(new URLSearchParams(location.search).get("introT") ?? NaN);
     let raf = 0;
     let cancelled = false;
@@ -89,19 +103,19 @@ export function IntroPreloader() {
       setRestore(clamp((t - AT.restore) / AT.restoreDur));
 
       if (Number.isFinite(frozen)) {
-        setStage(from);
+        setStage(stageAt(t, sc));
         return;
       }
 
       if (t >= AT.handoff && !handoffStart) {
         handoffStart = now;
         v.pause();
+        from = stageAt(t, sc);
         const mark = document.querySelector<HTMLElement>("[data-hero-mark]");
         const r = mark?.getBoundingClientRect();
         if (r) {
-          const w = (r.width / CROP.width) * F.w;
-          const s = w / F.w;
-          to = { x: r.left - CROP.left * s, y: r.top - CROP.top * s, w };
+          const s2 = r.width / HERO.width;
+          to = { x: r.left - HERO.left * s2, y: r.top - HERO.top * s2, s: s2 };
         } else to = from;
         html.classList.add("intro-anim");
         html.classList.remove("intro"); // hero copy rises in while the logo travels
@@ -110,7 +124,7 @@ export function IntroPreloader() {
       if (handoffStart && to) {
         const p = clamp((now - handoffStart) / HANDOFF_MS);
         const e = inOutCubic(p);
-        setStage({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e, w: from.w + (to.w - from.w) * e });
+        setStage({ x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e, s: from.s + (to.s - from.s) * e });
         setOverlay(1 - clamp((p - FADE_FROM) / (1 - FADE_FROM)));
         if (p >= 1) {
           finish(html);
@@ -118,7 +132,7 @@ export function IntroPreloader() {
           return;
         }
       } else {
-        setStage(from);
+        setStage(stageAt(t, sc)); // follow the logo as it moves in the clip
       }
       raf = requestAnimationFrame(tick);
     };
@@ -163,7 +177,6 @@ export function IntroPreloader() {
 
   if (gone) return null;
 
-  const h = stage ? (stage.w * F.h) / F.w : 0;
   const layer = "absolute inset-0 size-full";
 
   return (
@@ -171,16 +184,16 @@ export function IntroPreloader() {
       <div className="absolute inset-0 bg-white" style={{ opacity: overlay }} />
       <div
         className="absolute left-0 top-0"
-        style={
-          stage
-            ? { width: stage.w, height: h, transform: `translate3d(${stage.x}px, ${stage.y}px, 0)`, willChange: "transform" }
-            : { width: "100%", height: "100%" }
-        }
+        style={{
+          width: CLIP.w,
+          height: CLIP.h,
+          transform: stage ? `translate3d(${stage.x}px, ${stage.y}px, 0) scale(${stage.s})` : undefined,
+          transformOrigin: "0 0",
+          visibility: stage ? "visible" : "hidden",
+          willChange: "transform",
+        }}
       >
-        <video ref={video} className={`${layer} object-cover`} muted playsInline preload="auto" style={{ opacity: stage ? 1 : 0 }}>
-          <source src="/video/intro-720.mp4" type="video/mp4" media="(max-width: 767px)" />
-          <source src="/video/intro.mp4" type="video/mp4" />
-        </video>
+        <video ref={video} className={layer} src="/video/intro.mp4" muted playsInline preload="auto" />
         {/* restored inner lines and star, fitted to the clip's bag */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/video/intro-inner.png" alt="" className={layer} style={{ opacity: clamp(restore * 2) }} draggable={false} />

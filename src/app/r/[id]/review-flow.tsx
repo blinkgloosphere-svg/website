@@ -312,10 +312,7 @@ export function ReviewFlow({ businessId, config, gatingEnabled }: Props) {
       <p className="mt-3 text-[15px] text-white/60">{config.feedbackSuccessText}</p>
       {/* Low ratings stay private by default; a customer who still wants to post publicly can. */}
       {config.reviewLink ? (
-        <div className="mt-7 flex flex-col items-center gap-4">
-          <a href={config.reviewLink} target="_blank" rel="noopener" className="btn btn-lg w-full max-w-[280px] border border-white/20 bg-white/5 text-white hover:bg-white/10">
-            Continue
-          </a>
+        <div className="mt-7 flex flex-col items-center">
           <a
             href={config.reviewLink}
             target="_blank"

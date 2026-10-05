@@ -1,8 +1,20 @@
+"use client";
+
 import { Field } from "@/components/app/bits";
+import { ImageDrop } from "@/components/app/image-drop";
+import { ReviewLinkField } from "@/components/app/review-link-field";
 import type { BusinessConfig } from "@/lib/types";
+import type { UploadResult } from "@/lib/upload-image";
+
+type Props = {
+  config: BusinessConfig;
+  disabled?: boolean;
+  /** Stores a dropped logo or voucher for this business (admin or owner action). */
+  uploadImage: (kind: "logo" | "voucher", fd: FormData) => Promise<UploadResult>;
+};
 
 /** The review-page settings form, shared by the admin and the client dashboard. */
-export function ConfigFields({ config, disabled }: { config: BusinessConfig; disabled?: boolean }) {
+export function ConfigFields({ config, disabled, uploadImage }: Props) {
   const social = (type: string) => config.socialLinks.find((s) => s.type === type)?.url ?? "";
   return (
     <div className="space-y-8">
@@ -12,16 +24,24 @@ export function ConfigFields({ config, disabled }: { config: BusinessConfig; dis
           <input id="companyName" name="companyName" className="input" defaultValue={config.companyName} required />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Logo image URL" htmlFor="companyLogoUrl" hint="Upload a logo on the QR code page, or paste an image address.">
-            <input id="companyLogoUrl" name="companyLogoUrl" className="input" defaultValue={config.companyLogoUrl ?? ""} placeholder="https://…" />
-          </Field>
-          <Field label="Voucher image URL" htmlFor="voucherImageUrl" hint="Shown after a 4 or 5 star rating. Optional.">
-            <input id="voucherImageUrl" name="voucherImageUrl" className="input" defaultValue={config.voucherImageUrl ?? ""} placeholder="https://…" />
-          </Field>
+          <ImageDrop
+            name="companyLogoUrl"
+            label="Logo"
+            hint="Shown at the top of the review page."
+            initial={config.companyLogoUrl}
+            disabled={disabled}
+            upload={(fd) => uploadImage("logo", fd)}
+          />
+          <ImageDrop
+            name="voucherImageUrl"
+            label="Voucher (optional)"
+            hint="Shown after a 4 or 5 star rating."
+            initial={config.voucherImageUrl}
+            disabled={disabled}
+            upload={(fd) => uploadImage("voucher", fd)}
+          />
         </div>
-        <Field label="Google review link" htmlFor="reviewLink" hint="The address customers are sent to. Usually starts with search.google.com/local/writereview.">
-          <input id="reviewLink" name="reviewLink" className="input" defaultValue={config.reviewLink} placeholder="https://search.google.com/local/writereview?placeid=…" />
-        </Field>
+        <ReviewLinkField initial={config.reviewLink} disabled={disabled} />
       </fieldset>
 
       <fieldset className="space-y-4" disabled={disabled}>

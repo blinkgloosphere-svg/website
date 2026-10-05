@@ -1,24 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Field, Notice } from "@/components/app/bits";
 import { Loader } from "@/components/ui/icons";
+import { ReviewLinkField } from "@/components/app/review-link-field";
 import { createBusinessAction, type ActionResult } from "@/app/admin/actions";
 
 export function NewBusinessForm({ preview }: { preview: boolean }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(createBusinessAction, null);
+  const [name, setName] = useState("");
   return (
     <form action={action} className="space-y-5">
       <fieldset className="space-y-5" disabled={preview}>
         <Field label="Business name" htmlFor="name">
-          <input id="name" name="name" className="input" required placeholder="Copper Ladle Kitchen" />
+          <input id="name" name="name" className="input" required placeholder="Copper Ladle Kitchen" value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
         <Field label="Owner email" htmlFor="ownerEmail" hint="This becomes their login. They receive an email to set a password.">
           <input id="ownerEmail" name="ownerEmail" type="email" className="input" required placeholder="owner@business.sg" />
         </Field>
-        <Field label="Google review link" htmlFor="reviewLink" hint="Find it with the free QR tool, or leave blank and add it later.">
-          <input id="reviewLink" name="reviewLink" className="input" placeholder="https://search.google.com/local/writereview?placeid=…" />
-        </Field>
+        {/* Picking the business fills the review link, and the name if it is still empty. */}
+        <ReviewLinkField initial="" disabled={preview} onPick={(s) => setName((n) => n || s.name)} />
         <Field label="Subscription length" htmlFor="months">
           <select id="months" name="months" className="select" defaultValue="12">
             <option value="1">1 month (trial)</option>

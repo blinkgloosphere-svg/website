@@ -83,6 +83,8 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => items.length && setOpen(true)}
           onKeyDown={(e) => {
+            // This box sits inside settings forms; Enter must pick a result, never submit the form.
+            if (e.key === "Enter") e.preventDefault();
             if (!open) return;
             if (e.key === "ArrowDown") setActive((a) => Math.min(items.length - 1, a + 1));
             if (e.key === "ArrowUp") setActive((a) => Math.max(0, a - 1));

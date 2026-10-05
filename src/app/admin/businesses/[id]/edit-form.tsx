@@ -6,7 +6,7 @@ import { ConfigFields } from "@/components/app/config-fields";
 import { Loader } from "@/components/ui/icons";
 import { toDateInput } from "@/lib/format";
 import type { Business } from "@/lib/types";
-import { updateBusinessAction, type ActionResult } from "@/app/admin/actions";
+import { adminUploadImageAction, updateBusinessAction, type ActionResult } from "@/app/admin/actions";
 
 export function BusinessEditForm({ business, preview }: { business: Business; preview: boolean }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(updateBusinessAction.bind(null, business.id), null);
@@ -32,7 +32,7 @@ export function BusinessEditForm({ business, preview }: { business: Business; pr
         </div>
       </fieldset>
 
-      <ConfigFields config={business.config} disabled={preview} />
+      <ConfigFields config={business.config} disabled={preview} uploadImage={(kind, fd) => adminUploadImageAction(business.id, kind, fd)} />
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={pending || preview} className="btn btn-primary">

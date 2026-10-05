@@ -8,6 +8,7 @@ import { getRepo, ReadOnlyError } from "@/lib/data";
 import { addMonths } from "@/lib/format";
 import type { LeadStatus } from "@/lib/types";
 import { configFromForm } from "@/lib/business-form";
+import type { UploadResult } from "@/lib/upload-image";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -68,6 +69,13 @@ export async function updateBusinessAction(id: string, _: ActionResult | null, f
   } catch (e) {
     return fail(e);
   }
+}
+
+/** Admin upload of a client's logo or voucher. */
+export async function adminUploadImageAction(businessId: string, kind: "logo" | "voucher", fd: FormData): Promise<UploadResult> {
+  await requireAdmin();
+  const { storeBusinessImage } = await import("@/lib/upload-image");
+  return storeBusinessImage(businessId, kind, fd);
 }
 
 export async function extendSubscriptionAction(id: string, months: number): Promise<ActionResult> {

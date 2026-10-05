@@ -1,3 +1,5 @@
+import { reviewLinkFor } from "@/lib/review-link";
+
 
 export type PlaceSuggestion = {
   placeId: string;
@@ -16,9 +18,7 @@ const KEY = process.env.GOOGLE_MAPS_SERVER_KEY ?? "";
 export const placesConfigured = () => KEY.length > 0;
 
 /** Google review link for a place. Same format the printed QR codes use. */
-export function reviewLinkFor(placeId: string) {
-  return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
-}
+export { reviewLinkFor };
 
 /**
  * Sample results used while no Google key is configured, so the tools can be

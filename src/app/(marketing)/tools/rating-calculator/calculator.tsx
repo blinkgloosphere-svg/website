@@ -115,7 +115,18 @@ export function RatingCalculator({ initial }: { initial?: { placeId: string; ses
       <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div className="card-dark p-7">
           <p className="t-small text-dark-fg-secondary">5-star reviews needed</p>
-          {details && details.rating != null ? (
+          {details && details.rating != null && result === 0 ? (
+            <>
+              <p className="mt-2 text-[64px] font-semibold leading-none tracking-tight">0</p>
+              <p className="t-ui mt-3 text-dark-fg-secondary">
+                <span className="text-white">{details.name}</span> is already at {details.rating.toFixed(1)}★, at or above {target.toFixed(1)}★. Pick a
+                higher target, or keep it there: every new low rating pulls the average down.
+              </p>
+              <Link href="/#demo" className="btn btn-brand mt-6 w-full">
+                Protect my rating with Blink
+              </Link>
+            </>
+          ) : details && details.rating != null ? (
             <>
               <p className="mt-2 text-[64px] font-semibold leading-none tracking-tight">
                 {unlocked ? (result == null ? "∞" : result) : <span className="blur-sm select-none">{result == null ? "∞" : Math.max(9, result ?? 0)}</span>}

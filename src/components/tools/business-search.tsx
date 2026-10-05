@@ -26,9 +26,11 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
   const box = useRef<HTMLDivElement>(null);
   const session = useRef<string>("");
   const newSession = () => (session.current = crypto.randomUUID());
+  /** Name just chosen from the list; filling it into the box must not start another (billed) search. */
+  const picked = useRef<string | null>(null);
 
   useEffect(() => {
-    if (q.trim().length < 2) return;
+    if (q.trim().length < 2 || q === picked.current) return;
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       setLoading(true);
@@ -62,6 +64,7 @@ export function BusinessSearch({ onSelect, placeholder = "Start typing your busi
   }, []);
 
   function choose(s: Suggestion) {
+    picked.current = s.name;
     setQ(s.name);
     setOpen(false);
     onSelect(s, session.current);

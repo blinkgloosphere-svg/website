@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Distribution, Notice, ReviewList, StatusBadge } from "@/components/app/bits";
+import { Distribution, Notice, StatusBadge } from "@/components/app/bits";
 import { PageHeader, Stat } from "@/components/app/shell";
 import { ExternalLink } from "@/components/ui/icons";
 import { isPreview } from "@/lib/auth";
@@ -9,7 +9,6 @@ import { fmtDate, fmtNumber, fmtRating } from "@/lib/format";
 import { site } from "@/lib/site";
 import { BusinessEditForm } from "./edit-form";
 import { QuickActions } from "./quick-actions";
-import { withFeedbackPhotos } from "@/lib/feedback-photos";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; tab?: string }> };
 
@@ -19,7 +18,7 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
   const repo = await getRepo();
   const business = await repo.getBusiness(id);
   if (!business) notFound();
-  const [reviews, feedbackCount] = await Promise.all([repo.listReviews({ businessId: id, limit: 50 }), repo.countReviews({ businessId: id, maxRating: 3 })]);
+  const feedbackCount = await repo.countReviews({ businessId: id, maxRating: 3 });
   const preview = isPreview();
   const reviewUrl = `${site.url}/r/${business.id}`;
 
@@ -77,14 +76,6 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
           <section className="card p-5">
             <h2 className="t-title-3 mb-4">Rating breakdown</h2>
             <Distribution dist={business.ratingDistribution} total={business.totalReviews} />
-          </section>
-          <section className="card overflow-hidden">
-            <header className="border-b border-border px-5 py-3">
-              <h2 className="t-title-3">Latest reviews</h2>
-            </header>
-            <div className="max-h-[720px] overflow-y-auto">
-              <ReviewList reviews={await withFeedbackPhotos(reviews)} />
-            </div>
           </section>
         </div>
       </div>

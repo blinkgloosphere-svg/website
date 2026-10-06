@@ -11,6 +11,9 @@ export function QuickActions({ business, preview }: { business: Business; previe
   const refresh = () => router.refresh();
   return (
     <div className="mt-3 flex flex-wrap gap-2">
+      <ActionButton disabled={preview} action={() => extendSubscriptionAction(business.id, 36)} onResult={refresh}>
+        Extend 36 months
+      </ActionButton>
       <ActionButton disabled={preview} action={() => extendSubscriptionAction(business.id, 12)} onResult={refresh}>
         Extend 12 months
       </ActionButton>

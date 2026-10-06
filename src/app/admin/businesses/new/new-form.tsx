@@ -26,6 +26,7 @@ export function NewBusinessForm({ preview }: { preview: boolean }) {
             <option value="6">6 months</option>
             <option value="12">12 months</option>
             <option value="24">24 months</option>
+            <option value="36">36 months</option>
           </select>
         </Field>
         <label className="flex items-center gap-3 text-[14px]">

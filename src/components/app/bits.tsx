@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Stars } from "@/components/ui/stars";
+import { DeleteReviewButton } from "@/components/app/delete-review-button";
 import { fmtDate, relative } from "@/lib/format";
 import { subscriptionState, type Business, type Review } from "@/lib/types";
 
@@ -20,7 +21,20 @@ export function RatingPill({ rating }: { rating: number }) {
   return <span className={`badge ${cls}`}>{rating}★</span>;
 }
 
-export function ReviewList({ reviews, businessNames, showBusiness = false, emptyText = "No reviews yet." }: { reviews: Review[]; businessNames?: Map<string, string>; showBusiness?: boolean; emptyText?: string }) {
+/** `deletable` adds a Delete button per review. Admin pages only: the delete action itself also checks for an admin. */
+export function ReviewList({
+  reviews,
+  businessNames,
+  showBusiness = false,
+  emptyText = "No reviews yet.",
+  deletable = false,
+}: {
+  reviews: Review[];
+  businessNames?: Map<string, string>;
+  showBusiness?: boolean;
+  emptyText?: string;
+  deletable?: boolean;
+}) {
   if (!reviews.length) return <p className="t-ui p-6 text-center text-fg-tertiary">{emptyText}</p>;
   return (
     <ul className="divide-y divide-border">
@@ -58,6 +72,7 @@ export function ReviewList({ reviews, businessNames, showBusiness = false, empty
               </div>
             ) : null}
           </div>
+          {deletable ? <DeleteReviewButton reviewId={r.id} businessId={r.businessId} /> : null}
         </li>
       ))}
     </ul>

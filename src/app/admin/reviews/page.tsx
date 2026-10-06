@@ -51,7 +51,7 @@ export default async function AdminReviews({ searchParams }: { searchParams: Pro
       </div>
 
       <div className="card overflow-hidden">
-        <ReviewList reviews={await withFeedbackPhotos(reviews)} businessNames={names} showBusiness emptyText="No reviews match." />
+        <ReviewList reviews={await withFeedbackPhotos(reviews)} businessNames={names} showBusiness deletable emptyText="No reviews match." />
       </div>
 
       {pages > 1 ? (

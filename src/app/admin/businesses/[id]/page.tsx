@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Distribution, Notice, StatusBadge } from "@/components/app/bits";
+import { Distribution, Notice, ReviewList, StatusBadge } from "@/components/app/bits";
+import { withFeedbackPhotos } from "@/lib/feedback-photos";
 import { PageHeader, Stat } from "@/components/app/shell";
 import { ExternalLink } from "@/components/ui/icons";
 import { isPreview } from "@/lib/auth";
@@ -18,7 +19,7 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
   const repo = await getRepo();
   const business = await repo.getBusiness(id);
   if (!business) notFound();
-  const feedbackCount = await repo.countReviews({ businessId: id, maxRating: 3 });
+  const [reviews, feedbackCount] = await Promise.all([repo.listReviews({ businessId: id, limit: 50 }), repo.countReviews({ businessId: id, maxRating: 3 })]);
   const preview = isPreview();
   const reviewUrl = `${site.url}/r/${business.id}`;
 
@@ -76,6 +77,15 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
           <section className="card p-5">
             <h2 className="t-title-3 mb-4">Rating breakdown</h2>
             <Distribution dist={business.ratingDistribution} total={business.totalReviews} />
+          </section>
+          <section className="card overflow-hidden">
+            <header className="border-b border-border px-5 py-3">
+              <h2 className="t-title-3">Latest reviews</h2>
+              <p className="t-small text-fg-tertiary">Only admins can delete reviews, e.g. tests. The client never sees these buttons.</p>
+            </header>
+            <div className="max-h-[720px] overflow-y-auto">
+              <ReviewList reviews={await withFeedbackPhotos(reviews)} deletable={!preview} />
+            </div>
           </section>
         </div>
       </div>

@@ -34,7 +34,7 @@ export async function getSession(): Promise<SessionUser | null> {
   return { id: data.user.id, email: data.user.email ?? null };
 }
 
-async function isAdminUser(userId: string): Promise<boolean> {
+export async function isAdminUser(userId: string): Promise<boolean> {
   const { createServiceClient } = await import("@/lib/supabase/server");
   const { count, error } = await createServiceClient()
     .from("admin_users")

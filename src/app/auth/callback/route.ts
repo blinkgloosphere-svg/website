@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 
-/** Exchanges the code from invite / password-reset emails for a session. */
+/**
+ * Old address used by login emails sent before /auth/confirm existed.
+ * Forwards everything (query, and the #fragment, which browsers keep across
+ * redirects) to /auth/confirm, which verifies the link in the browser.
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/dashboard";
-  const safeNext = next.startsWith("/") ? next : "/dashboard";
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(safeNext, url.origin));
-  }
-  return NextResponse.redirect(new URL("/login?error=That+link+has+expired.+Request+a+new+one.", url.origin));
+  const target = new URL("/auth/confirm", url.origin);
+  url.searchParams.forEach((v, k) => target.searchParams.set(k, v));
+  return NextResponse.redirect(target);
 }

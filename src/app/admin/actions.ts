@@ -36,8 +36,8 @@ export async function createBusinessAction(_: ActionResult | null, fd: FormData)
       config: { companyName: name, reviewLink },
     });
     if (bool(fd, "invite")) {
-      const { inviteOwner } = await import("@/lib/data/supabase-repo");
-      await inviteOwner(ownerEmail);
+      const { sendAccessLink } = await import("@/lib/auth-links");
+      await sendAccessLink(ownerEmail, "invite");
     }
     revalidatePath("/admin/businesses");
     redirect(`/admin/businesses/${b.id}?created=1`);
@@ -128,9 +128,9 @@ export async function deleteBusinessAction(id: string): Promise<ActionResult> {
 export async function sendPasswordResetAction(email: string): Promise<ActionResult> {
   await requireAdmin();
   try {
-    const { inviteOwner } = await import("@/lib/data/supabase-repo");
-    const kind = await inviteOwner(email);
-    return { ok: true, message: kind === "invited" ? "Invitation sent." : "Password reset email sent." };
+    const { sendAccessLink } = await import("@/lib/auth-links");
+    const sent = await sendAccessLink(email, "reset");
+    return sent ? { ok: true, message: `Login email sent to ${email}.` } : { ok: false, error: `${email} has no login yet. Save the business first.` };
   } catch (e) {
     return fail(e);
   }

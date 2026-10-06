@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Field, Notice } from "@/components/app/bits";
 import { Loader } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
+import { requestPasswordResetAction } from "./actions";
 
 export function LoginForm({ next, initialError }: { next: string; initialError: string | null }) {
   const router = useRouter();
@@ -42,9 +43,9 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
     setBusy(true);
     setError(null);
     try {
-      const { error } = await createClient().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/password` });
-      if (error) setError(error.message);
-      else setSent(true);
+      const res = await requestPasswordResetAction(email);
+      if (res.ok) setSent(true);
+      else setError(res.error);
     } catch {
       setError("Could not reach the login server. Check your connection and try again.");
     } finally {
@@ -53,7 +54,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
   }
 
   if (sent) {
-    return <Notice kind="success">Check your inbox. We sent a link to set a new password.</Notice>;
+    return <Notice kind="success">Check your inbox. If this email has a Blink login, we&apos;ve sent a link to set a new password. It works once and lasts 1 hour.</Notice>;
   }
 
   return (

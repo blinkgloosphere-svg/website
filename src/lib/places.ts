@@ -63,8 +63,9 @@ export async function searchPlaces(query: string, session?: string): Promise<Pla
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": KEY },
     body: JSON.stringify({
       input: q,
-      includedRegionCodes: ["sg"],
-      locationBias: { circle: { center: { latitude: 1.3521, longitude: 103.8198 }, radius: 30000 } },
+      // Any country. Singapore is only a preference, so local shops rank first
+      // but overseas businesses (e.g. Malaysia, Philippines) can still be found.
+      locationBias: { circle: { center: { latitude: 1.3521, longitude: 103.8198 }, radius: 50000 } },
       ...(session ? { sessionToken: session } : {}),
     }),
     cache: "no-store",

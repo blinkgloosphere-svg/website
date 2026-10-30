@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/shell";
 import { BarChart, Inbox, MessageSquareQuote, QrCode, Settings } from "@/components/ui/icons";
-import { isPreview, requireOwnerBusiness, viewAsBusinessId } from "@/lib/auth";
+import { getSession, isAdminUser, isPreview, requireOwnerBusiness, viewAsBusinessId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const viewingAs = business && (await viewAsBusinessId()) === business.id;
 
   if (!business) {
+    // Admins (e.g. Brian) have no business of their own: send them to the admin, not a dead end.
+    const user = await getSession();
+    if (user && (await isAdminUser(user.id))) redirect("/admin");
     return (
       <main className="grid min-h-dvh place-items-center p-6">
         <div className="card max-w-md p-8 text-center">

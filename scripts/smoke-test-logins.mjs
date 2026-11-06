@@ -51,7 +51,10 @@ try {
     const r = await page(p, cA); ok(`admin page ${p}`, r.status === 200 && !/Preview mode/.test(r.html), `status ${r.status}`);
   }
   { const r = await page("/admin/businesses", cA); const n = (r.html.match(/\/admin\/businesses\/[A-Za-z0-9]{20,}"/g) || []).length; ok("admin sees all businesses", n >= 64, `${new Set(r.html.match(/\/admin\/businesses\/[A-Za-z0-9]{20,}/g)).size} unique links`); }
-  { const r = await page(`/admin/businesses/${realBiz.id}`, cA); ok("admin sees a real client's detail", r.html.includes(realBiz.name.replace(/&/g, "&amp;").slice(0, 10))); }
+  { const r = await page(`/admin/businesses/${realBiz.id}`, cA); ok("admin sees a real client's detail", r.html.includes(realBiz.name.replace(/&/g, "&amp;").slice(0, 10)));
+    const via = r.html.match(/data-email-status="(\w+)"/)?.[1];
+    console.log(`  info: login emails are sent by ${via ?? "unknown"}`);
+    ok("admin sees the login help (copy link / set password)", r.html.includes("Copy login link")); }
   { const r = await page(`/admin/businesses/${realBiz.id}/view-as`, cA); const vc = (r.status >= 300 && r.status < 400); const setCookie = vc ? "blink_view_as=" + realBiz.id : "";
     const d = await page("/dashboard", `${cA}; ${setCookie}`); ok("admin 'view as client' opens that client's dashboard", d.status === 200 && d.html.includes("You are viewing") && d.html.includes(realBiz.name.replace(/&/g, "&amp;").slice(0, 10)), `status ${d.status}`); }
   { const r = await restAs(sA.access_token, "leads?select=id&limit=1"); ok("admin can read leads in the database", r.status === 200); }

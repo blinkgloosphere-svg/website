@@ -10,8 +10,10 @@ import { fmtDate, fmtNumber, fmtRating } from "@/lib/format";
 import { site } from "@/lib/site";
 import { BusinessEditForm } from "./edit-form";
 import { QuickActions } from "./quick-actions";
+import { LoginAccess } from "./login-access";
+import { emailConfigured } from "@/lib/email";
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; tab?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string; tab?: string; invite?: string }> };
 
 export default async function BusinessDetail({ params, searchParams }: Props) {
   const { id } = await params;
@@ -22,6 +24,7 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
   const [reviews, feedbackCount] = await Promise.all([repo.listReviews({ businessId: id, limit: 50 }), repo.countReviews({ businessId: id, maxRating: 3 })]);
   const preview = isPreview();
   const reviewUrl = `${site.url}/r/${business.id}`;
+  const emailReady = emailConfigured();
 
   return (
     <>
@@ -40,7 +43,19 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
           </>
         }
       />
-      {sp.created ? <div className="mb-4"><Notice kind="success">Business created. Share the review link below and send the owner their login invite.</Notice></div> : null}
+      {sp.created ? (
+        <div className="mb-4">
+          {sp.invite === "failed" ? (
+            <Notice kind="error">
+              Business and login created, but the welcome email could not be sent. Use &quot;Copy login link&quot; or &quot;Set a password&quot; below and send it to the client on WhatsApp.
+            </Notice>
+          ) : (
+            <Notice kind="success">
+              Business created.{sp.invite === "sent" ? ` A welcome email went to ${business.ownerEmail}.` : ""} If it doesn&apos;t arrive, use &quot;Copy login link&quot; below.
+            </Notice>
+          )}
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Total reviews" value={fmtNumber(business.totalReviews)} />
@@ -65,6 +80,12 @@ export default async function BusinessDetail({ params, searchParams }: Props) {
           <section className="card p-5">
             <h2 className="t-title-3">Account and subscription</h2>
             <QuickActions business={business} preview={preview} />
+            <p className="t-small mt-3 text-fg-tertiary" data-email-status={emailReady ? "resend" : "supabase"}>
+              {emailReady
+                ? `Login emails are sent by Resend from ${site.fromEmail.replace(/^.*<|>$/g, "")}. Ask clients to check spam if they don't see it.`
+                : "Resend is not connected (RESEND_API_KEY is missing in Vercel), so login emails go through Supabase and may be slow or blocked."}
+            </p>
+            <LoginAccess businessId={business.id} email={business.ownerEmail} disabled={preview} />
           </section>
 
           <section className="card p-5">

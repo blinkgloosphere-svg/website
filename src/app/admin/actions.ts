@@ -35,12 +35,21 @@ export async function createBusinessAction(_: ActionResult | null, fd: FormData)
       linkExpiresAt: addMonths(new Date(), months).toISOString(),
       config: { companyName: name, reviewLink },
     });
+    // The business and login exist from here on. A failed email must not look like a failed
+    // signup, or the admin tries again and ends up with a duplicate.
+    let invite = "";
     if (bool(fd, "invite")) {
-      const { sendAccessLink } = await import("@/lib/auth-links");
-      await sendAccessLink(ownerEmail, "invite");
+      try {
+        const { sendAccessLink } = await import("@/lib/auth-links");
+        await sendAccessLink(ownerEmail, "invite");
+        invite = "&invite=sent";
+      } catch (e) {
+        console.error("[invite]", e);
+        invite = "&invite=failed";
+      }
     }
     revalidatePath("/admin/businesses");
-    redirect(`/admin/businesses/${b.id}?created=1`);
+    redirect(`/admin/businesses/${b.id}?created=1${invite}`);
   } catch (e) {
     if (e && typeof e === "object" && "digest" in e) throw e; // redirect()
     return fail(e);
@@ -131,6 +140,37 @@ export async function sendPasswordResetAction(email: string): Promise<ActionResu
     const { sendAccessLink } = await import("@/lib/auth-links");
     const sent = await sendAccessLink(email, "reset");
     return sent ? { ok: true, message: `Login email sent to ${email}.` } : { ok: false, error: `${email} has no login yet. Save the business first.` };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** A one-time login link the admin can copy and send by WhatsApp. Nothing is emailed. */
+export async function loginLinkAction(email: string): Promise<{ ok: true; link: string } | { ok: false; error: string }> {
+  await requireAdmin();
+  try {
+    const { createAccessLink } = await import("@/lib/auth-links");
+    const link = await createAccessLink(email, "invite");
+    return link ? { ok: true, link } : { ok: false, error: `${email} has no login yet. Save the business first.` };
+  } catch (e) {
+    return fail(e) as { ok: false; error: string };
+  }
+}
+
+/** Sets the owner's password directly, for clients who can't get the email. */
+export async function setOwnerPasswordAction(businessId: string, password: string): Promise<ActionResult> {
+  await requireAdmin();
+  try {
+    if (password.length < 8) return { ok: false, error: "Use at least 8 characters." };
+    const b = await (await getRepo()).getBusiness(businessId);
+    if (!b?.ownerEmail) return { ok: false, error: "This business has no owner email." };
+    const { createServiceClient } = await import("@/lib/supabase/server");
+    const db = createServiceClient();
+    const { data: row } = await db.from("businesses").select("owner_id").eq("id", businessId).single();
+    if (!row?.owner_id) return { ok: false, error: "This owner has no login yet. Save the business first." };
+    const { error } = await db.auth.admin.updateUserById(row.owner_id, { password, email_confirm: true });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, message: `Password saved for ${b.ownerEmail}.` };
   } catch (e) {
     return fail(e);
   }

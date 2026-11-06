@@ -17,6 +17,23 @@ export type AccessKind = "invite" | "reset";
  *
  * Returns false when the email has no login (callers decide whether to say so).
  */
+/**
+ * Makes a one-time "choose your password" link without sending anything, so an
+ * admin can pass it on by WhatsApp. Null when the email has no login.
+ */
+export async function createAccessLink(email: string, kind: AccessKind): Promise<string | null> {
+  // Every business owner already has a confirmed login (created with the business), so a
+  // recovery link covers both "set your password" and "reset your password".
+  const { data, error } = await createServiceClient().auth.admin.generateLink({ type: "recovery", email: email.trim().toLowerCase() });
+  if (error) {
+    if (/not\s*found|no user/i.test(error.message)) return null;
+    throw new Error(`generateLink: ${error.message}`);
+  }
+  const hashed = data.properties?.hashed_token;
+  if (!hashed) throw new Error("generateLink: no token returned");
+  return `${site.url.replace(/\/+$/, "")}/auth/confirm?token_hash=${encodeURIComponent(hashed)}&type=recovery&kind=${kind}`;
+}
+
 export async function sendAccessLink(email: string, kind: AccessKind): Promise<boolean> {
   const db = createServiceClient();
   const target = email.trim().toLowerCase();
@@ -29,17 +46,8 @@ export async function sendAccessLink(email: string, kind: AccessKind): Promise<b
     return true;
   }
 
-  // Every business owner already has a confirmed login (created with the business), so a
-  // recovery link covers both "set your password" and "reset your password".
-  const { data, error } = await db.auth.admin.generateLink({ type: "recovery", email: target });
-  if (error) {
-    if (/not\s*found|no user/i.test(error.message)) return false;
-    throw new Error(`generateLink: ${error.message}`);
-  }
-  const hashed = data.properties?.hashed_token;
-  if (!hashed) throw new Error("generateLink: no token returned");
-
-  const link = `${site.url.replace(/\/+$/, "")}/auth/confirm?token_hash=${encodeURIComponent(hashed)}&type=recovery&kind=${kind}`;
+  const link = await createAccessLink(target, kind);
+  if (!link) return false;
   const invite = kind === "invite";
   const sent = await sendEmail({
     to: target,

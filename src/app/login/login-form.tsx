@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Notice } from "@/components/app/bits";
+import { site } from "@/lib/site";
 import { Loader } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
 import { requestPasswordResetAction } from "./actions";
@@ -23,7 +24,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
       const { error } = await createClient().auth.signInWithPassword({ email, password });
       if (error) {
         setBusy(false);
-        setError("Email or password is incorrect.");
+        setError("Email or password is incorrect. Moved over from the old Gloosphere system? Your old password no longer works: tap Forgot password? below to set a new one.");
         return;
       }
       // Keep the spinner while the dashboard loads.
@@ -54,7 +55,11 @@ export function LoginForm({ next, initialError }: { next: string; initialError: 
   }
 
   if (sent) {
-    return <Notice kind="success">Check your inbox. If this email has a Blink login, we&apos;ve sent a link to set a new password. It works once and lasts 1 hour.</Notice>;
+    return (
+      <Notice kind="success">
+        Check your inbox for an email from notifications@reviews.blink.sg. If this email has a Blink login, it has a link to set a new password (works once, within 1 hour). Nothing after 5 minutes? Check your spam or promotions folder, or WhatsApp us at {site.whatsappDisplay}.
+      </Notice>
+    );
   }
 
   return (

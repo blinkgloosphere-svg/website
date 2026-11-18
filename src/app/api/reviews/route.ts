@@ -112,9 +112,22 @@ export async function POST(req: Request) {
     saved = false;
   }
 
-  // Email the owner about 1 to 3 star feedback, only if they switched alerts on. A bare tap
-  // (no feedback yet) is only recorded; the alert goes out when the customer sends their feedback.
+  // Email the owner about every 1 to 3 star rating, if they switched alerts on. Most customers
+  // tap a low star and leave without writing, so the tap itself gets a short alert; if they then
+  // send feedback, a second email carries their message.
   const isFeedback = !!earlier || !!input.message.trim() || photoCount > 0;
+  if (rating <= 3 && !isFeedback && saved && business.sendEmailNotifications && business.ownerEmail) {
+    await sendEmail({
+      to: business.ownerEmail,
+      subject: `New ${rating}-star rating for ${business.name}`,
+      html: layout(
+        `Low rating alert for ${business.name}`,
+        `<p style="font-size:15px">A customer just tapped <strong>${"★".repeat(rating)}</strong> (${rating} out of 5) on your review page. Blink kept it off Google.</p>` +
+          `<p style="font-size:15px;color:#62666d">They haven't written any feedback yet. If they do, you'll get a second email with their message.</p>` +
+          button(`${site.url}/dashboard/feedback`, "Open your dashboard"),
+      ),
+    });
+  }
   if (rating <= 3 && isFeedback && business.sendEmailNotifications && business.ownerEmail) {
     await sendEmail({
       to: business.ownerEmail,

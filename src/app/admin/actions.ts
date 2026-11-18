@@ -170,6 +170,8 @@ export async function setOwnerPasswordAction(businessId: string, password: strin
     if (!row?.owner_id) return { ok: false, error: "This owner has no login yet. Save the business first." };
     const { error } = await db.auth.admin.updateUserById(row.owner_id, { password, email_confirm: true });
     if (error) return { ok: false, error: error.message };
+    const { sendPasswordChangedEmail } = await import("@/lib/password-notice");
+    await sendPasswordChangedEmail(b.ownerEmail, true).catch(() => false);
     return { ok: true, message: `Password saved for ${b.ownerEmail}.` };
   } catch (e) {
     return fail(e);

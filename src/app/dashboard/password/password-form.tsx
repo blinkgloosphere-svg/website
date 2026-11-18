@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Field, Notice } from "@/components/app/bits";
 import { Loader } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
+import { passwordChangedAction } from "@/app/auth/actions";
 
 export function PasswordForm() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function PasswordForm() {
     }
     setBusy(false);
     if (error) return setMsg({ kind: "error", text: error.message });
+    passwordChangedAction().catch(() => undefined);
     setMsg({ kind: "success", text: "Password saved. Taking you to your dashboard…" });
     setTimeout(() => router.replace("/dashboard"), 900);
   }

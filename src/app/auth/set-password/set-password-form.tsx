@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Field, Notice } from "@/components/app/bits";
 import { Loader } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
+import { passwordChangedAction } from "@/app/auth/actions";
 
 export function SetPasswordForm({ after }: { after: string }) {
   const router = useRouter();
@@ -31,6 +32,8 @@ export function SetPasswordForm({ after }: { after: string }) {
       return setMsg({ kind: "error", text: same ? "Choose a password you haven't used before." : error.message });
     }
     setMsg({ kind: "success", text: "Password saved. Signing you in…" });
+    // Send the "password changed" email before moving on (never wait more than a few seconds).
+    await Promise.race([passwordChangedAction().catch(() => undefined), new Promise((r) => setTimeout(r, 3000))]);
     router.replace(after);
     router.refresh();
   }
